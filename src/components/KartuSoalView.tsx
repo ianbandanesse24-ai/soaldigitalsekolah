@@ -48,6 +48,7 @@ import { useMathFieldEditor } from '../hooks/useMathFieldEditor';
 import { DocumentSignatureBlock } from './DocumentSignatureBlock';
 import { FormatAcuanUploader } from './FormatAcuanUploader';
 import { MathSymbolBar } from './MathSymbolBar';
+import { QuestionImageControl } from './QuestionImageControl';
 
 interface KartuSoalViewProps {
   metadata: ExamMetadata;
@@ -774,6 +775,15 @@ export const KartuSoalView: React.FC<KartuSoalViewProps> = ({
                   </span>
                 </div>
                 <div className="p-4 text-sm text-slate-900 space-y-3">
+                  {q.gambarUrl && q.gambarPosisi !== 'bawah' && (
+                    <div className="my-2 max-w-sm rounded-lg border border-slate-200 bg-white p-2">
+                      <img src={q.gambarUrl} alt={q.gambarKeterangan || `Gambar soal ${q.nomor}`} className="max-h-48 w-auto rounded object-contain mx-auto" />
+                      {q.gambarKeterangan && (
+                        <p className="mt-1 text-center text-xs text-slate-500 italic">{q.gambarKeterangan}</p>
+                      )}
+                    </div>
+                  )}
+
                   <textarea
                     rows={3}
                     value={q.rumusanSoal}
@@ -786,6 +796,25 @@ export const KartuSoalView: React.FC<KartuSoalViewProps> = ({
                     }
                     className="w-full rounded-md border border-slate-200/80 p-2 text-sm text-slate-900 hover:border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/15 focus:outline-none print:border-none print:p-0 print:resize-none"
                   />
+
+                  {q.gambarUrl && q.gambarPosisi === 'bawah' && (
+                    <div className="my-2 max-w-sm rounded-lg border border-slate-200 bg-white p-2">
+                      <img src={q.gambarUrl} alt={q.gambarKeterangan || `Gambar soal ${q.nomor}`} className="max-h-48 w-auto rounded object-contain mx-auto" />
+                      {q.gambarKeterangan && (
+                        <p className="mt-1 text-center text-xs text-slate-500 italic">{q.gambarKeterangan}</p>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="no-print pt-2 border-t border-slate-200">
+                    <QuestionImageControl
+                      questionNumber={q.nomor}
+                      gambarUrl={q.gambarUrl}
+                      gambarKeterangan={q.gambarKeterangan}
+                      gambarPosisi={q.gambarPosisi}
+                      onChange={(patch) => updateQuestion(q.id, patch)}
+                    />
+                  </div>
 
                   {q.type === 'PG' && (
                     <div className="space-y-2 pl-1 text-sm">

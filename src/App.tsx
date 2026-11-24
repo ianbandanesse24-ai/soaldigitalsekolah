@@ -5,6 +5,8 @@ import {
   Printer,
   Save,
   ShieldCheck,
+  LogOut,
+  User as UserIcon,
 } from 'lucide-react';
 import {
   ActiveModule,
@@ -37,8 +39,13 @@ import { DataSoalView } from './components/DataSoalView';
 import { KisiKisiView } from './components/KisiKisiView';
 import { KartuSoalView } from './components/KartuSoalView';
 import { KumpulanSoalView } from './components/KumpulanSoalView';
+import { LoginModal } from './components/LoginModal';
 
-const STORAGE_KEY = 'naskahuji_paket_soal_v1';
+interface UserSession {
+  username: string;
+  role: 'admin' | 'guru';
+  nama: string;
+}
 
 const MODULE_TITLES: Record<ActiveModule, string> = {
   data_soal: 'Data Soal',
@@ -46,6 +53,10 @@ const MODULE_TITLES: Record<ActiveModule, string> = {
   kartu_soal: 'Kartu Soal',
   kumpulan_soal: 'Kumpulan Soal',
 };
+
+function getStorageKey(username: string): string {
+  return `naskahuji_paket_soal_v1_${username.toLowerCase()}`;
+}
 
 function ensureTotalBobot100(questions: QuestionItem[]): QuestionItem[] {
   const sum =
@@ -78,33 +89,6 @@ function normalizeQuestions(
   return ensureTotalBobot100(withTiers);
 }
 
-function deriveKomposisiFromQuestions(
-  questions: QuestionItem[],
-  prevSelected: Record<QuestionType, boolean>
-): {
-  komposisi: Record<QuestionType, number>;
-  selectedQuestionTypes: Record<QuestionType, boolean>;
-  jumlahTotalSoal: number;
-} {
-  const komposisi: Record<QuestionType, number> = {
-    PG: questions.filter((q) => q.type === 'PG').length,
-    ESAY: questions.filter((q) => q.type === 'ESAY').length,
-    JAWABAN_SINGKAT: questions.filter((q) => q.type === 'JAWABAN_SINGKAT').length,
-    MENJODOHKAN: questions.filter((q) => q.type === 'MENJODOHKAN').length,
-  };
-  const selectedQuestionTypes: Record<QuestionType, boolean> = {
-    PG: komposisi.PG > 0 || prevSelected.PG,
-    ESAY: komposisi.ESAY > 0 || prevSelected.ESAY,
-    JAWABAN_SINGKAT: komposisi.JAWABAN_SINGKAT > 0 || prevSelected.JAWABAN_SINGKAT,
-    MENJODOHKAN: komposisi.MENJODOHKAN > 0 || prevSelected.MENJODOHKAN,
-  };
-  return {
-    komposisi,
-    selectedQuestionTypes,
-    jumlahTotalSoal: questions.length,
-  };
-}
-
 function normalizeSmaGradeAndPhase(
   kelas?: string,
   fase?: string
@@ -126,9 +110,9 @@ function normalizeSmaGradeAndPhase(
   };
 }
 
-function loadInitialState(): ExamProjectState {
+function loadStateForUser(username: string): ExamProjectState {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(getStorageKey(username));
     if (!raw) return INITIAL_PROJECT_STATE;
     const parsed = JSON.parse(raw) as Partial<ExamProjectState>;
     if (!parsed.metadata || !Array.isArray(parsed.questions)) {
@@ -215,16 +199,61 @@ function loadInitialState(): ExamProjectState {
 }
 
 export default function App() {
-  const [project, setProject] = useState<ExamProjectState>(loadInitialState);
+  const [currentUser, setCurrentUser] = useState<UserSession | null>(() => {
+    try {
+      const savedUser = sessionStorage.getItem('naskahuji_current_user');
+      if (savedUser) {
+        return JSON.parse(savedUser) as UserSession;
+      }
+    } catch {
+      // ignore
+    }
+    return null;
+  });
+
+  const [project, setProject] = useState<ExamProjectState>(() => {
+    try {
+      const savedUser = sessionStorage.getItem('naskahuji_current_user');
+      if (savedUser) {
+        const u = JSON.parse(savedUser) as UserSession;
+        return loadStateForUser(u.username);
+      }
+    } catch {
+      // ignore
+    }
+    return INITIAL_PROJECT_STATE;
+  });
+
   const [activeModule, setActiveModule] = useState<ActiveModule>('data_soal');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [saveFeedback, setSaveFeedback] = useState(false);
   const [smartFillNotice, setSmartFillNotice] = useState<string | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const handleLoginSuccess = (user: UserSession) => {
+    setCurrentUser(user);
     try {
-      // Simpan state tanpa dataUrl raksasa jika melebihi kuota storage
+      sessionStorage.setItem('naskahuji_current_user', JSON.stringify(user));
+    } catch {
+      // ignore
+    }
+    const userState = loadStateForUser(user.username);
+    setProject(userState);
+    setActiveModule('data_soal');
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    try {
+      sessionStorage.removeItem('naskahuji_current_user');
+    } catch {
+      // ignore
+    }
+  };
+
+  useEffect(() => {
+    if (!currentUser) return;
+    try {
       const compactState: ExamProjectState = {
         ...project,
         kisiKisiAcuan: project.kisiKisiAcuan
@@ -248,11 +277,11 @@ export default function App() {
             }
           : null,
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(compactState));
+      localStorage.setItem(getStorageKey(currentUser.username), JSON.stringify(compactState));
     } catch {
-      // Abaikan jika kuota localStorage penuh
+      // ignore quota limits
     }
-  }, [project]);
+  }, [project, currentUser]);
 
   const handleManualSave = () => {
     setProject((prev) => ({
@@ -263,7 +292,6 @@ export default function App() {
     setTimeout(() => setSaveFeedback(false), 2000);
   };
 
-  // Sinkronisasi terpadu antara Data Soal, Kisi-Kisi, Kartu Soal, dan Kumpulan Soal
   const handleSyncMetadataAndQuestions = (
     nextMetadata: ExamMetadata,
     nextQuestions: QuestionItem[]
@@ -303,86 +331,29 @@ export default function App() {
 
   const handleUpdateQuestions = (questions: QuestionItem[]) => {
     setProject((prev) => {
-      const derived = deriveKomposisiFromQuestions(
-        questions,
-        prev.metadata.selectedQuestionTypes
-      );
-      const nextMetadata: ExamMetadata = {
-        ...prev.metadata,
-        ...derived,
-      };
+      const normalized = normalizeQuestions(questions, prev.metadata.tingkatanPersentase);
       const populated = autoPopulateQuestionsForColumns(
-        questions,
-        nextMetadata,
-        [...prev.kisiKisiColumns, ...prev.kartuSoalFields],
-        {
-          ...(prev.kisiKisiAcuan?.detectedSampleValues || {}),
-          ...(prev.kartuSoalAcuan?.detectedSampleValues || {}),
-        }
+        normalized,
+        prev.metadata,
+        [...prev.kisiKisiColumns, ...prev.kartuSoalFields]
       );
       return {
         ...prev,
-        metadata: nextMetadata,
         questions: populated,
       };
     });
   };
 
-  const triggerSmartFillNotice = (msg: string) => {
-    setSmartFillNotice(msg);
-    setTimeout(() => setSmartFillNotice(null), 6000);
-  };
-
-  const mergeDetectedAcuanMetadata = (
-    prevMeta: ExamMetadata,
-    detected?: UploadedFormatAcuan['detectedMetadata']
-  ): ExamMetadata => {
-    if (!detected) return prevMeta;
-    const nextSubject = detected.mataPelajaran || prevMeta.mataPelajaran;
-    const smaGrade = normalizeSmaGradeAndPhase(
-      detected.kelas || prevMeta.kelas,
-      detected.fase || prevMeta.fase
-    );
-    const analysis = analyzeCpForSubjectAndPhase(nextSubject, smaGrade.fase);
-    return {
-      ...prevMeta,
-      ...detected,
-      mataPelajaran: nextSubject,
-      ...smaGrade,
-      kelasSemester: `${smaGrade.kelas} / ${smaGrade.fase}`,
-      kurikulum: KURIKULUM_TETAP,
-      cpAcuanRegulasi: analysis.regulationFull,
-      cpAcuanRingkasan: analysis.summary,
-    };
-  };
-
-  const handleApplyKisiAcuan = (
-    acuan: UploadedFormatAcuan | null,
-    nextColumns: ReferenceColumnDef[]
-  ) => {
+  const handleApplyKisiAcuan = (acuan: UploadedFormatAcuan | null, nextColumns: ReferenceColumnDef[]) => {
     setProject((prev) => {
-      const nextMetadata = mergeDetectedAcuanMetadata(
+      const populated = autoPopulateQuestionsForColumns(
+        prev.questions,
         prev.metadata,
-        acuan?.detectedMetadata
+        [...nextColumns, ...prev.kartuSoalFields],
+        acuan?.detectedSampleValues
       );
-      const { questions: populated, filledQuestionsCount } =
-        smartFillWorkFromAcuan(
-          prev.questions,
-          nextMetadata,
-          [...nextColumns, ...prev.kartuSoalFields],
-          {
-            ...(prev.kartuSoalAcuan?.detectedSampleValues || {}),
-            ...(acuan?.detectedSampleValues || {}),
-          }
-        );
-      if (acuan) {
-        triggerSmartFillNotice(
-          `Format Acuan "${acuan.fileName}" diterapkan: ${nextColumns.length} kolom & seluruh isian (${filledQuestionsCount} soal, TP, Indikator, Kustom) terisi cerdas.`
-        );
-      }
       return {
         ...prev,
-        metadata: nextMetadata,
         kisiKisiAcuan: acuan,
         kisiKisiColumns: nextColumns,
         questions: populated,
@@ -390,33 +361,16 @@ export default function App() {
     });
   };
 
-  const handleApplyKartuAcuan = (
-    acuan: UploadedFormatAcuan | null,
-    nextFields: ReferenceColumnDef[]
-  ) => {
+  const handleApplyKartuAcuan = (acuan: UploadedFormatAcuan | null, nextFields: ReferenceColumnDef[]) => {
     setProject((prev) => {
-      const nextMetadata = mergeDetectedAcuanMetadata(
+      const populated = autoPopulateQuestionsForColumns(
+        prev.questions,
         prev.metadata,
-        acuan?.detectedMetadata
+        [...prev.kisiKisiColumns, ...nextFields],
+        acuan?.detectedSampleValues
       );
-      const { questions: populated, filledQuestionsCount } =
-        smartFillWorkFromAcuan(
-          prev.questions,
-          nextMetadata,
-          [...prev.kisiKisiColumns, ...nextFields],
-          {
-            ...(prev.kisiKisiAcuan?.detectedSampleValues || {}),
-            ...(acuan?.detectedSampleValues || {}),
-          }
-        );
-      if (acuan) {
-        triggerSmartFillNotice(
-          `Format Acuan Kartu Soal "${acuan.fileName}" diterapkan: ${nextFields.length} field & seluruh isian (${filledQuestionsCount} kartu, Rumusan, Kunci, Pembahasan) terisi cerdas.`
-        );
-      }
       return {
         ...prev,
-        metadata: nextMetadata,
         kartuSoalAcuan: acuan,
         kartuSoalFields: nextFields,
         questions: populated,
@@ -424,136 +378,83 @@ export default function App() {
     });
   };
 
+  const handleUpdateKisiColumns = (columns: ReferenceColumnDef[]) => {
+    setProject((prev) => ({
+      ...prev,
+      kisiKisiColumns: columns,
+    }));
+  };
+
+  const handleUpdateKartuFields = (fields: ReferenceColumnDef[]) => {
+    setProject((prev) => ({
+      ...prev,
+      kartuSoalFields: fields,
+    }));
+  };
+
   const handleSmartFillAll = () => {
+    if (!project.kisiKisiAcuan && !project.kartuSoalAcuan) {
+      setSmartFillNotice('Upload file format acuan terlebih dahulu pada menu Kisi-Kisi atau Kartu Soal.');
+      setTimeout(() => setSmartFillNotice(null), 4000);
+      return;
+    }
+    const acuan = project.kisiKisiAcuan || project.kartuSoalAcuan;
+    if (!acuan) return;
+
     setProject((prev) => {
-      const { questions: populated, filledQuestionsCount, customFieldsCount } =
-        smartFillWorkFromAcuan(
-          prev.questions,
-          prev.metadata,
-          [...prev.kisiKisiColumns, ...prev.kartuSoalFields],
-          {
-            ...(prev.kisiKisiAcuan?.detectedSampleValues || {}),
-            ...(prev.kartuSoalAcuan?.detectedSampleValues || {}),
-          },
-          { forceSyncTpFromBab: true }
-        );
-      triggerSmartFillNotice(
-        `Pengisian cerdas selesai: ${filledQuestionsCount} butir soal, Tujuan Pembelajaran per Bab, indikator ABCD, serta ${customFieldsCount} kolom acuan kustom diperbarui & disinkronkan.`
+      const acuan = prev.kisiKisiAcuan || prev.kartuSoalAcuan;
+      if (!acuan) return prev;
+      const res = smartFillWorkFromAcuan(
+        prev.questions,
+        prev.metadata,
+        [...prev.kisiKisiColumns, ...prev.kartuSoalFields],
+        acuan.detectedSampleValues
       );
+      const normalized = normalizeQuestions(res.questions, prev.metadata.tingkatanPersentase);
       return {
         ...prev,
-        questions: populated,
+        questions: normalized,
       };
     });
+    setSmartFillNotice('Aplikasi berhasil mengisi otomatis seluruh instrumen soal & metadata sesuai format acuan.');
+    setTimeout(() => setSmartFillNotice(null), 4000);
   };
 
-  const handleUpdateKisiColumns = (nextColumns: ReferenceColumnDef[]) => {
-    setProject((prev) => ({
-      ...prev,
-      kisiKisiColumns: nextColumns,
-      questions: autoPopulateQuestionsForColumns(
-        prev.questions,
-        prev.metadata,
-        [...nextColumns, ...prev.kartuSoalFields],
-        prev.kisiKisiAcuan?.detectedSampleValues
-      ),
-    }));
-  };
-
-  const handleUpdateKartuFields = (nextFields: ReferenceColumnDef[]) => {
-    setProject((prev) => ({
-      ...prev,
-      kartuSoalFields: nextFields,
-      questions: autoPopulateQuestionsForColumns(
-        prev.questions,
-        prev.metadata,
-        [...prev.kisiKisiColumns, ...nextFields],
-        prev.kartuSoalAcuan?.detectedSampleValues
-      ),
-    }));
-  };
-
-  const handleImportJson = async (file: File) => {
-    setImportError(null);
-    try {
-      const text = await file.text();
-      const parsed = JSON.parse(text) as ExamProjectState;
-      if (!parsed.metadata || !Array.isArray(parsed.questions)) {
-        throw new Error('Struktur berkas JSON paket soal tidak valid.');
+  const handleImportJson = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string;
+        const imported = JSON.parse(text) as ExamProjectState;
+        if (!imported.metadata || !Array.isArray(imported.questions)) {
+          throw new Error('Format file JSON tidak valid.');
+        }
+        const normalized = normalizeQuestions(imported.questions, imported.metadata.tingkatanPersentase);
+        const populated = autoPopulateQuestionsForColumns(
+          normalized,
+          imported.metadata,
+          [...(imported.kisiKisiColumns || INITIAL_PROJECT_STATE.kisiKisiColumns), ...(imported.kartuSoalFields || INITIAL_PROJECT_STATE.kartuSoalFields)]
+        );
+        setProject({
+          ...imported,
+          questions: populated,
+          lastSavedAt: new Date().toISOString(),
+        });
+        setImportError(null);
+        setSaveFeedback(true);
+        setTimeout(() => setSaveFeedback(false), 2000);
+      } catch (err: any) {
+        setImportError(err?.message || 'Gagal mengimpor file JSON.');
       }
-      const tingkatanPersentase = {
-        ...DEFAULT_TINGKATAN_PERSENTASE,
-        ...(parsed.metadata.tingkatanPersentase || {}),
-      };
-      const smaGrade = normalizeSmaGradeAndPhase(
-        parsed.metadata.kelas,
-        parsed.metadata.fase
-      );
-      const cpAnalysis = analyzeCpForSubjectAndPhase(
-        parsed.metadata.mataPelajaran || INITIAL_PROJECT_STATE.metadata.mataPelajaran,
-        smaGrade.fase
-      );
-      const kisiCols =
-        Array.isArray(parsed.kisiKisiColumns) && parsed.kisiKisiColumns.length > 0
-          ? parsed.kisiKisiColumns
-          : INITIAL_PROJECT_STATE.kisiKisiColumns;
-      const kartuCols =
-        Array.isArray(parsed.kartuSoalFields) && parsed.kartuSoalFields.length > 0
-          ? parsed.kartuSoalFields
-          : INITIAL_PROJECT_STATE.kartuSoalFields;
-      const importedBabList = (
-        Array.isArray(parsed.metadata.babMateriList) &&
-        parsed.metadata.babMateriList.length > 0
-          ? parsed.metadata.babMateriList
-          : INITIAL_PROJECT_STATE.metadata.babMateriList
-      ).map((bab) => ({
-        ...bab,
-        tujuanPembelajaranList:
-          Array.isArray(bab.tujuanPembelajaranList) &&
-          bab.tujuanPembelajaranList.length > 0
-            ? bab.tujuanPembelajaranList
-            : buildDefaultTpsForBab(
-                bab.namaBab,
-                bab.lingkupMateri,
-                parsed.metadata.mataPelajaran ||
-                  INITIAL_PROJECT_STATE.metadata.mataPelajaran,
-                smaGrade.fase,
-                bab.capaianPembelajaran
-              ),
-      }));
-      const nextMeta: ExamMetadata = {
-        ...INITIAL_PROJECT_STATE.metadata,
-        ...parsed.metadata,
-        ...smaGrade,
-        kelasSemester: `${smaGrade.kelas} / ${smaGrade.fase}`,
-        kurikulum: KURIKULUM_TETAP,
-        cpAcuanRegulasi: parsed.metadata.cpAcuanRegulasi || cpAnalysis.regulationFull,
-        cpAcuanRingkasan: parsed.metadata.cpAcuanRingkasan || cpAnalysis.summary,
-        tingkatanPersentase,
-        babMateriList: importedBabList,
-      };
-      setProject({
-        ...INITIAL_PROJECT_STATE,
-        ...parsed,
-        questions: autoPopulateQuestionsForColumns(
-          normalizeQuestions(parsed.questions, tingkatanPersentase),
-          nextMeta,
-          [...kisiCols, ...kartuCols]
-        ),
-        kisiKisiColumns: kisiCols,
-        kartuSoalFields: kartuCols,
-        metadata: nextMeta,
-      });
-    } catch (err) {
-      setImportError(
-        err instanceof Error ? err.message : 'Gagal memuat berkas JSON.'
-      );
-    }
+    };
+    reader.readAsText(file);
   };
 
   const handleResetDefault = () => {
     setImportError(null);
-    localStorage.removeItem(STORAGE_KEY);
+    if (currentUser) {
+      localStorage.removeItem(getStorageKey(currentUser.username));
+    }
     setProject({
       ...INITIAL_PROJECT_STATE,
       lastSavedAt: new Date().toISOString(),
@@ -561,6 +462,11 @@ export default function App() {
     setSaveFeedback(true);
     setTimeout(() => setSaveFeedback(false), 2000);
   };
+
+  // If user is not logged in, render LoginModal
+  if (!currentUser) {
+    return <LoginModal onLoginSuccess={handleLoginSuccess} />;
+  }
 
   return (
     <div className="flex min-h-screen bg-slate-50 text-slate-900">
@@ -577,7 +483,7 @@ export default function App() {
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Top Bar (Contextual Breadcrumb + Actions + Admin Master Pojok Kanan Atas) */}
+        {/* Top Bar (Contextual Breadcrumb + Actions + User / Admin Master) */}
         <header className="no-print sticky top-0 z-30 flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 bg-white/95 backdrop-blur-sm px-4 py-2 sm:flex-nowrap sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 min-w-0">
             <button
@@ -645,17 +551,29 @@ export default function App() {
               {activeModule === 'data_soal' ? 'Lihat Kumpulan Soal' : 'Cetak Halaman'}
             </button>
 
-            {/* Nama Admin Master di Pojok Kanan Atas */}
-            <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50/75 px-2.5 py-1.5 text-left shrink-0">
-              <ShieldCheck className="h-4 w-4 text-blue-700 shrink-0" />
+            {/* User Session Badge & Admin Master / Logout */}
+            <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-left shrink-0">
+              {currentUser.role === 'admin' ? (
+                <ShieldCheck className="h-4 w-4 text-blue-700 shrink-0" />
+              ) : (
+                <UserIcon className="h-4 w-4 text-indigo-600 shrink-0" />
+              )}
               <div className="leading-tight">
-                <span className="block text-[10px] font-semibold uppercase tracking-wider text-blue-700">
-                  Admin Master
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  {currentUser.role === 'admin' ? 'Admin Master' : 'Pengguna / Guru'}
                 </span>
                 <span className="block text-xs font-bold text-slate-900 whitespace-nowrap">
-                  Aspian La Ode Madimu, S.Pd .Gr
+                  {currentUser.role === 'admin' ? 'Aspian La Ode Madimu, S.Pd .Gr' : currentUser.username}
                 </span>
               </div>
+              <button
+                type="button"
+                onClick={handleLogout}
+                title="Keluar / Ganti Akun"
+                className="ml-1 p-1.5 text-slate-400 hover:text-rose-600 hover:bg-white rounded-lg transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </header>
@@ -724,7 +642,7 @@ export default function App() {
         <footer className="no-print border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 lg:px-8">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
             <span className="font-semibold text-slate-700">
-              Soal Digital Sekolah
+              Soal Digital Sekolah ({currentUser.role === 'admin' ? 'Mode Admin' : 'Mode Guru: ' + currentUser.username})
             </span>
             <span>
               Admin Master:{' '}

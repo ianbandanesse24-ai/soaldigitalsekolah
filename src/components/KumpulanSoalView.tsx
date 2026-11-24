@@ -330,6 +330,15 @@ export const KumpulanSoalView: React.FC<KumpulanSoalViewProps> = ({
             {displayNumber}.
           </span>
           <div className="min-w-0 flex-1 space-y-2.5">
+            {q.gambarUrl && q.gambarPosisi !== 'bawah' && (
+              <div className="my-2 max-w-sm rounded-lg border border-slate-200 bg-white p-2">
+                <img src={q.gambarUrl} alt={q.gambarKeterangan || `Gambar soal ${displayNumber}`} className="max-h-48 w-auto rounded object-contain mx-auto" />
+                {q.gambarKeterangan && (
+                  <p className="mt-1 text-center text-xs text-slate-500 italic">{q.gambarKeterangan}</p>
+                )}
+              </div>
+            )}
+
             <p className="whitespace-pre-line leading-relaxed">
               {showTierLabel && (
                 <span className="mr-1.5 font-mono text-xs font-semibold text-blue-700">
@@ -338,6 +347,15 @@ export const KumpulanSoalView: React.FC<KumpulanSoalViewProps> = ({
               )}
               {q.rumusanSoal}
             </p>
+
+            {q.gambarUrl && q.gambarPosisi === 'bawah' && (
+              <div className="my-2 max-w-sm rounded-lg border border-slate-200 bg-white p-2">
+                <img src={q.gambarUrl} alt={q.gambarKeterangan || `Gambar soal ${displayNumber}`} className="max-h-48 w-auto rounded object-contain mx-auto" />
+                {q.gambarKeterangan && (
+                  <p className="mt-1 text-center text-xs text-slate-500 italic">{q.gambarKeterangan}</p>
+                )}
+              </div>
+            )}
 
             {q.type === 'PG' && (
               <div className="grid grid-cols-1 gap-1.5 pl-1 sm:grid-cols-2">
