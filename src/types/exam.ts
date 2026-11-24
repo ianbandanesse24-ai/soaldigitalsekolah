@@ -51,6 +51,9 @@ export interface QuestionItem {
   pasanganMenjodohkan: MatchingPair[];
   pembahasan: string;
   catatanTelaah: string;
+  gambarUrl?: string;
+  gambarKeterangan?: string;
+  gambarPosisi?: 'atas' | 'bawah';
   customFields?: Record<string, string>;
 }
 
@@ -69,6 +72,12 @@ export interface ExamMetadata {
   alokasiWaktu: string;
   penyusun: string;
   nipPenyusun: string;
+  namaWakasekKurikulum?: string;
+  nipWakasekKurikulum?: string;
+  namaKetuaTimPenyusun?: string;
+  nipKetuaTimPenyusun?: string;
+  namaKepalaSekolah?: string;
+  nipKepalaSekolah?: string;
   babMateriList: BabMateriConfig[];
   selectedQuestionTypes: Record<QuestionType, boolean>;
   tingkatanPersentase: Record<QuestionTier, number>;

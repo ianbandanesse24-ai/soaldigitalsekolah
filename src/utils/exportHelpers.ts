@@ -18,6 +18,7 @@ import {
   generateDefaultTujuanPembelajaran,
   normalizeCustomFieldKey,
 } from './autoFillAcuan';
+import { measureImageForPdf } from './imageHelpers';
 
 export function resolveQuestionFieldValue(
   question: QuestionItem,
@@ -177,6 +178,184 @@ function getSafeFileSubject(metadata: ExamMetadata): string {
   return (metadata.mataPelajaran || 'Paket_Soal').replace(/[^a-zA-Z0-9]+/g, '_');
 }
 
+function getSignatureOfficials(metadata: ExamMetadata) {
+  return {
+    wakasekNama:
+      metadata.namaWakasekKurikulum?.trim() ||
+      '........................................',
+    wakasekNip: metadata.nipWakasekKurikulum?.trim() || '',
+    ketuaNama:
+      metadata.namaKetuaTimPenyusun?.trim() ||
+      metadata.penyusun?.trim() ||
+      '........................................',
+    ketuaNip:
+      metadata.nipKetuaTimPenyusun?.trim() ||
+      metadata.nipPenyusun?.trim() ||
+      '',
+    kepsekNama:
+      metadata.namaKepalaSekolah?.trim() ||
+      '........................................',
+    kepsekNip: metadata.nipKepalaSekolah?.trim() || '',
+  };
+}
+
+export function buildDocumentSignatureHtml(metadata: ExamMetadata): string {
+  const sig = getSignatureOfficials(metadata);
+  return `
+    <table class="no-border" style="margin-top:22pt; width:100%; page-break-inside:avoid;">
+      <tr>
+        <td style="width:50%; vertical-align:top; padding-left:12pt;">
+          Mengetahui,<br/>
+          <strong>Wakasek Kurikulum,</strong><br/><br/><br/><br/>
+          <u><strong>${escapeHtml(sig.wakasekNama)}</strong></u>${
+    sig.wakasekNip ? `<br/>NIP. ${escapeHtml(sig.wakasekNip)}` : ''
+  }
+        </td>
+        <td style="width:50%; vertical-align:top; padding-left:16%;">
+          &nbsp;<br/>
+          <strong>Ketua Tim Penyusun,</strong><br/><br/><br/><br/>
+          <u><strong>${escapeHtml(sig.ketuaNama)}</strong></u>${
+    sig.ketuaNip ? `<br/>NIP. ${escapeHtml(sig.ketuaNip)}` : ''
+  }
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" style="text-align:center; padding-top:18pt; vertical-align:top;">
+          Menyetujui,<br/>
+          <strong>Kepala Sekolah,</strong><br/><br/><br/><br/>
+          <u><strong>${escapeHtml(sig.kepsekNama)}</strong></u>${
+    sig.kepsekNip ? `<br/>NIP. ${escapeHtml(sig.kepsekNip)}` : ''
+  }
+        </td>
+      </tr>
+    </table>
+  `;
+}
+
+function appendSignatureRowsToSheet(
+  rows: (string | number)[][],
+  metadata: ExamMetadata,
+  rightColIdx: number
+): void {
+  const sig = getSignatureOfficials(metadata);
+  const safeRight = Math.max(1, rightColIdx);
+  const centerCol = Math.max(0, Math.floor(safeRight / 2));
+
+  const makeRow = (entries: [number, string][]): string[] => {
+    const arr = new Array<string>(safeRight + 1).fill('');
+    for (const [col, val] of entries) {
+      arr[col] = val;
+    }
+    return arr;
+  };
+
+  rows.push([]);
+  rows.push(makeRow([[0, 'Mengetahui,']]));
+  rows.push(
+    makeRow([
+      [0, 'Wakasek Kurikulum,'],
+      [safeRight, 'Ketua Tim Penyusun,'],
+    ])
+  );
+  rows.push([]);
+  rows.push([]);
+  rows.push([]);
+  rows.push(
+    makeRow([
+      [0, sig.wakasekNama],
+      [safeRight, sig.ketuaNama],
+    ])
+  );
+  if (sig.wakasekNip || sig.ketuaNip) {
+    rows.push(
+      makeRow([
+        [0, sig.wakasekNip ? `NIP. ${sig.wakasekNip}` : ''],
+        [safeRight, sig.ketuaNip ? `NIP. ${sig.ketuaNip}` : ''],
+      ])
+    );
+  }
+  rows.push([]);
+  rows.push(makeRow([[centerCol, 'Menyetujui,']]));
+  rows.push(makeRow([[centerCol, 'Kepala Sekolah,']]));
+  rows.push([]);
+  rows.push([]);
+  rows.push([]);
+  rows.push(makeRow([[centerCol, sig.kepsekNama]]));
+  if (sig.kepsekNip) {
+    rows.push(makeRow([[centerCol, `NIP. ${sig.kepsekNip}`]]));
+  }
+}
+
+function appendSignatureBlockToPdf(
+  doc: jsPDF,
+  startY: number,
+  margin: number,
+  pageWidth: number,
+  pageHeight: number,
+  fontName: 'DejaVuSans' | 'helvetica',
+  unicodeReady: boolean,
+  metadata: ExamMetadata
+): void {
+  const sig = getSignatureOfficials(metadata);
+  let y = startY;
+  const neededHeight = 68;
+  if (y + neededHeight > pageHeight - 12) {
+    doc.addPage();
+    y = 18;
+  }
+
+  const leftX = margin + 6;
+  const rightX = Math.max(pageWidth / 2 + 12, pageWidth - margin - 64);
+  const centerX = pageWidth / 2;
+
+  doc.setFontSize(8.5);
+  doc.setFont(fontName, 'normal');
+  doc.text('Mengetahui,', leftX, y);
+  doc.setFont(fontName, 'bold');
+  doc.text('Wakasek Kurikulum,', leftX, y + 4.2);
+  doc.text('Ketua Tim Penyusun,', rightX, y + 4.2);
+
+  const nameY = y + 20;
+  const wakasekText = sanitizePdfText(sig.wakasekNama, unicodeReady);
+  const ketuaText = sanitizePdfText(sig.ketuaNama, unicodeReady);
+  doc.text(wakasekText, leftX, nameY);
+  const wWidth = doc.getTextWidth(wakasekText);
+  doc.setLineWidth(0.25);
+  doc.line(leftX, nameY + 0.8, leftX + wWidth, nameY + 0.8);
+
+  doc.text(ketuaText, rightX, nameY);
+  const kWidth = doc.getTextWidth(ketuaText);
+  doc.line(rightX, nameY + 0.8, rightX + kWidth, nameY + 0.8);
+
+  doc.setFont(fontName, 'normal');
+  if (sig.wakasekNip) {
+    doc.text(sanitizePdfText(`NIP. ${sig.wakasekNip}`, unicodeReady), leftX, nameY + 4.2);
+  }
+  if (sig.ketuaNip) {
+    doc.text(sanitizePdfText(`NIP. ${sig.ketuaNip}`, unicodeReady), rightX, nameY + 4.2);
+  }
+
+  // Baris Bawah Tengah: Menyetujui, Kepala Sekolah
+  const kepsekTopY = nameY + 12;
+  doc.setFont(fontName, 'normal');
+  doc.text('Menyetujui,', centerX, kepsekTopY, { align: 'center' });
+  doc.setFont(fontName, 'bold');
+  doc.text('Kepala Sekolah,', centerX, kepsekTopY + 4.2, { align: 'center' });
+
+  const kepsekNameY = kepsekTopY + 20;
+  const kepsekText = sanitizePdfText(sig.kepsekNama, unicodeReady);
+  doc.text(kepsekText, centerX, kepsekNameY, { align: 'center' });
+  const ksWidth = doc.getTextWidth(kepsekText);
+  doc.line(centerX - ksWidth / 2, kepsekNameY + 0.8, centerX + ksWidth / 2, kepsekNameY + 0.8);
+
+  if (sig.kepsekNip) {
+    doc.setFont(fontName, 'normal');
+    doc.text(sanitizePdfText(`NIP. ${sig.kepsekNip}`, unicodeReady), centerX, kepsekNameY + 4.2, {
+      align: 'center',
+    });
+  }
+}
+
 // ==========================================
 // 1. KISI-KISI SOAL (PDF, WORD, EXCEL)
 // ==========================================
@@ -203,7 +382,14 @@ export function downloadKisiKisiExcel(
     columns.map((col) => resolveQuestionFieldValue(q, metadata, col))
   );
 
-  const ws = XLSX.utils.aoa_to_sheet([...headerMeta, ...dataRows]);
+  const allRows: (string | number)[][] = [...headerMeta, ...dataRows];
+  appendSignatureRowsToSheet(
+    allRows,
+    metadata,
+    Math.max(1, columns.length - 2)
+  );
+
+  const ws = XLSX.utils.aoa_to_sheet(allRows);
   ws['!cols'] = columns.map((c) => ({
     wch:
       c.mappedField === 'nomor' ||
@@ -289,6 +475,19 @@ export async function downloadKisiKisiPdf(
     margin: { left: 14, right: 14 },
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const finalY = ((doc as any).lastAutoTable?.finalY || 120) + 10;
+  appendSignatureBlockToPdf(
+    doc,
+    finalY,
+    14,
+    doc.internal.pageSize.getWidth(),
+    doc.internal.pageSize.getHeight(),
+    fontName,
+    unicodeReady,
+    metadata
+  );
+
   doc.save(`Kisi_Kisi_${getSafeFileSubject(metadata)}.pdf`);
 }
 
@@ -315,6 +514,14 @@ export function downloadKartuSoalExcel(
       rows.push([f.headerLabel, resolveQuestionFieldValue(q, metadata, f)]);
     });
     rows.push(['Rumusan Butir Soal', q.rumusanSoal]);
+    if (q.gambarUrl) {
+      rows.push([
+        'Lampiran Gambar',
+        q.gambarKeterangan?.trim()
+          ? `[Terlampir Gambar: ${q.gambarKeterangan.trim()}]`
+          : '[Terlampir Gambar Stimulus]',
+      ]);
+    }
     if (q.type === 'PG') {
       const keys = (['A', 'B', 'C', 'D', ...(q.useOptionE ? ['E'] : [])] as const);
       keys.forEach((k) => {
@@ -337,6 +544,8 @@ export function downloadKartuSoalExcel(
     rows.push([]);
   });
 
+  appendSignatureRowsToSheet(rows, metadata, 1);
+
   const ws = XLSX.utils.aoa_to_sheet(rows);
   ws['!cols'] = [{ wch: 36 }, { wch: 76 }];
   const wb = XLSX.utils.book_new();
@@ -353,7 +562,8 @@ export async function downloadKartuSoalPdf(
   const fontName = await ensurePdfUnicodeFont(doc);
   const unicodeReady = fontName === 'DejaVuSans';
 
-  questions.forEach((q, idx) => {
+  for (let idx = 0; idx < questions.length; idx++) {
+    const q = questions[idx];
     if (idx > 0) doc.addPage();
 
     doc.setFontSize(12);
@@ -436,7 +646,50 @@ export async function downloadKartuSoalPdf(
       },
       margin: { left: 14, right: 14 },
     });
-  });
+
+    if (q.gambarUrl) {
+      const imgPayload = await measureImageForPdf(q.gambarUrl);
+      if (imgPayload) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let imgY = ((doc as any).lastAutoTable?.finalY || 180) + 6;
+        const pageH = doc.internal.pageSize.getHeight();
+        const maxImgW = 90;
+        const maxImgH = 48;
+        const scale = Math.min(maxImgW / imgPayload.width, maxImgH / imgPayload.height, 1);
+        const drawW = Math.max(18, imgPayload.width * scale);
+        const drawH = Math.max(14, imgPayload.height * scale);
+
+        if (imgY + drawH + 12 > pageH - 15) {
+          doc.addPage();
+          imgY = 18;
+        }
+
+        doc.setFontSize(8);
+        doc.setFont(fontName, 'bold');
+        doc.text('Lampiran Gambar Stimulus:', 14, imgY);
+        imgY += 3;
+        doc.addImage(imgPayload.dataUrl, imgPayload.format, 14, imgY, drawW, drawH);
+        imgY += drawH + 4;
+        if (q.gambarKeterangan?.trim()) {
+          doc.setFont(fontName, 'normal');
+          doc.text(sanitizePdfText(q.gambarKeterangan.trim(), unicodeReady), 14, imgY);
+        }
+      }
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const lastCardY = ((doc as any).lastAutoTable?.finalY || 180) + 12;
+  appendSignatureBlockToPdf(
+    doc,
+    lastCardY,
+    14,
+    doc.internal.pageSize.getWidth(),
+    doc.internal.pageSize.getHeight(),
+    fontName,
+    unicodeReady,
+    metadata
+  );
 
   doc.save(`Kartu_Soal_${getSafeFileSubject(metadata)}.pdf`);
 }
@@ -478,16 +731,22 @@ export function downloadKumpulanSoalExcel(
 
     const tier = q.tingkatanSoal || tierFromCognitiveLevel(q.levelKognitif);
 
+    const rumusanWithImgNote = q.gambarUrl
+      ? `${q.rumusanSoal}\n[Gambar Stimulus: ${q.gambarKeterangan || 'Terlampir'}]`
+      : q.rumusanSoal;
+
     soalRows.push([
       idx + 1,
       tier,
       SHORT_LABEL_JENIS_SOAL[q.type],
       q.materi,
-      q.rumusanSoal,
+      rumusanWithImgNote,
       detail,
       q.bobot,
     ]);
   });
+
+  appendSignatureRowsToSheet(soalRows, metadata, 5);
 
   const wb = XLSX.utils.book_new();
   const wsSoal = XLSX.utils.aoa_to_sheet(soalRows);
@@ -628,7 +887,29 @@ export async function downloadKumpulanSoalPdf(
   doc.text(petunjukLines, margin, y);
   y += petunjukLines.length * 4.2 + 5;
 
-  const renderSingleQuestionPdf = (q: QuestionItem, displayNo: number) => {
+  const renderQuestionImagePdf = async (q: QuestionItem) => {
+    if (!q.gambarUrl) return;
+    const imgPayload = await measureImageForPdf(q.gambarUrl);
+    if (!imgPayload) return;
+
+    const maxImgW = Math.min(98, maxWidth - 10);
+    const maxImgH = 54;
+    const scale = Math.min(maxImgW / imgPayload.width, maxImgH / imgPayload.height, 1);
+    const drawW = Math.max(20, imgPayload.width * scale);
+    const drawH = Math.max(14, imgPayload.height * scale);
+
+    ensureSpace(drawH + (q.gambarKeterangan?.trim() ? 9 : 4));
+    doc.addImage(imgPayload.dataUrl, imgPayload.format, margin + 5, y, drawW, drawH);
+    y += drawH + 3.5;
+    if (q.gambarKeterangan?.trim()) {
+      doc.setFont(fontName, 'normal');
+      doc.setFontSize(8);
+      doc.text(sanitizePdfText(q.gambarKeterangan.trim(), unicodeReady), margin + 5, y);
+      y += 4;
+    }
+  };
+
+  const renderSingleQuestionPdf = async (q: QuestionItem, displayNo: number) => {
     const tier = q.tingkatanSoal || tierFromCognitiveLevel(q.levelKognitif);
     const prefix = options.showTierLabel !== false ? `${displayNo}. [${tier}] ` : `${displayNo}. `;
     const qLines = doc.splitTextToSize(
@@ -636,10 +917,19 @@ export async function downloadKumpulanSoalPdf(
       maxWidth
     );
     ensureSpace(qLines.length * 4.5 + 18);
+
+    if (q.gambarUrl && q.gambarPosisi !== 'bawah') {
+      await renderQuestionImagePdf(q);
+    }
+
     doc.setFont(fontName, 'normal');
     doc.setFontSize(9.5);
     doc.text(qLines, margin, y);
     y += qLines.length * 4.4 + 1.5;
+
+    if (q.gambarUrl && q.gambarPosisi === 'bawah') {
+      await renderQuestionImagePdf(q);
+    }
 
     if (q.type === 'PG') {
       const keys = (['A', 'B', 'C', 'D', ...(q.useOptionE ? ['E'] : [])] as const);
@@ -711,12 +1001,14 @@ export async function downloadKumpulanSoalPdf(
       doc.text(sec.title, margin, y);
       y += 5.5;
       for (const item of items) {
-        renderSingleQuestionPdf(item, runningNo++);
+        await renderSingleQuestionPdf(item, runningNo++);
       }
       y += 2;
     }
   } else {
-    questions.forEach((item, idx) => renderSingleQuestionPdf(item, idx + 1));
+    for (let idx = 0; idx < questions.length; idx++) {
+      await renderSingleQuestionPdf(questions[idx], idx + 1);
+    }
   }
 
   if (options.showAnswerKey && questions.length > 0) {
@@ -752,7 +1044,22 @@ export async function downloadKumpulanSoalPdf(
       },
       margin: { left: margin, right: margin },
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    y = ((doc as any).lastAutoTable?.finalY || y + 40) + 10;
+  } else {
+    y += 8;
   }
+
+  appendSignatureBlockToPdf(
+    doc,
+    y,
+    margin,
+    pageWidth,
+    pageHeight,
+    fontName,
+    unicodeReady,
+    metadata
+  );
 
   doc.save(`Kumpulan_Soal_${getSafeFileSubject(metadata)}.pdf`);
 }

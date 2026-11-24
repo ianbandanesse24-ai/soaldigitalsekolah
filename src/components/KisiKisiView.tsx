@@ -32,6 +32,7 @@ import {
   normalizeCustomFieldKey,
 } from '../utils/autoFillAcuan';
 import {
+  buildDocumentSignatureHtml,
   downloadKisiKisiExcel,
   downloadKisiKisiPdf,
   downloadTemplateAcuanKisiKisi,
@@ -40,6 +41,7 @@ import {
   resolveQuestionFieldValue,
 } from '../utils/exportHelpers';
 import { useMathFieldEditor } from '../hooks/useMathFieldEditor';
+import { DocumentSignatureBlock } from './DocumentSignatureBlock';
 import { FormatAcuanUploader } from './FormatAcuanUploader';
 import { MathSymbolBar } from './MathSymbolBar';
 
@@ -178,15 +180,7 @@ export const KisiKisiView: React.FC<KisiKisiViewProps> = ({
         <thead><tr>${thead}</tr></thead>
         <tbody>${tbody}</tbody>
       </table>
-      <table class="no-border" style="margin-top:20pt;">
-        <tr>
-          <td style="width:65%;"></td>
-          <td>
-            Penyusun,<br/><br/><br/><br/>
-            <strong>${escapeHtml(metadata.penyusun)}</strong>
-          </td>
-        </tr>
-      </table>
+      ${buildDocumentSignatureHtml(metadata)}
     `;
 
     const safeSubject = metadata.mataPelajaran.replace(/[^a-zA-Z0-9]+/g, '_');
@@ -722,20 +716,7 @@ export const KisiKisiView: React.FC<KisiKisiViewProps> = ({
           </table>
         </div>
 
-        <div className="mt-6 flex justify-end text-xs text-slate-800">
-          <div className="w-64">
-            <p>Penyusun Soal,</p>
-            <div className="h-14" />
-            <p className="font-semibold underline underline-offset-4">
-              {metadata.penyusun}
-            </p>
-            {metadata.nipPenyusun && (
-              <p className="mt-0.5 font-mono text-slate-600 tabular-nums">
-                NIP. {metadata.nipPenyusun}
-              </p>
-            )}
-          </div>
-        </div>
+        <DocumentSignatureBlock metadata={metadata} />
       </section>
     </div>
   );

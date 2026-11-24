@@ -40,7 +40,7 @@ export const MathSymbolBar: React.FC<MathSymbolBarProps> = ({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={onConvertActiveNotation}
-            title="Ubah ketikan x^2, H_2O, <=, >=, !=, ->, \\sqrt, \\pi menjadi simbol Unicode"
+            title="Ubah ketikan x^2, H_2O, <=, >=, !=, ->, <->, \\sqrt, \\pi menjadi simbol Unicode"
             className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:border-blue-600 hover:text-blue-700 transition-colors cursor-pointer whitespace-nowrap"
           >
             <Sparkles className="h-3.5 w-3.5 text-blue-700" />
@@ -90,7 +90,7 @@ export const MathSymbolBar: React.FC<MathSymbolBarProps> = ({
 
       {!activeFieldLabel && (
         <p className="text-[11px] text-slate-500">
-          Klik kolom teks/isian terlebih dahulu, lalu tekan simbol atau rumus di atas untuk menyisipkan tepat pada posisi kursor.
+          Klik kolom teks/soal/opsi terlebih dahulu, lalu tekan simbol atau rumus di atas untuk menyisipkan di posisi kursor (atau ketik <span className="font-mono font-semibold text-slate-700">x^2</span>, <span className="font-mono font-semibold text-slate-700">H_2O</span>, <span className="font-mono font-semibold text-slate-700">&lt;-&gt;</span> lalu klik Konversi).
         </p>
       )}
     </div>

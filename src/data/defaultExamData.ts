@@ -612,6 +612,12 @@ export const INITIAL_METADATA: ExamMetadata = {
   alokasiWaktu: '90 Menit',
   penyusun: 'Tim MGMP Matematika',
   nipPenyusun: '19870412 201101 1 004',
+  namaWakasekKurikulum: 'Drs. H. Ahmad Fauzi, M.Pd.',
+  nipWakasekKurikulum: '19750614 200312 1 003',
+  namaKetuaTimPenyusun: 'Tim MGMP Matematika',
+  nipKetuaTimPenyusun: '19870412 201101 1 004',
+  namaKepalaSekolah: 'Dr. Hj. Siti Rahmawati, M.Pd.',
+  nipKepalaSekolah: '19700321 199802 2 001',
   babMateriList: INITIAL_BAB_LIST,
   selectedQuestionTypes: {
     PG: true,

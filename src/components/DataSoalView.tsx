@@ -8,6 +8,7 @@ import {
   RefreshCw,
   Sparkles,
   Trash2,
+  UserCheck,
 } from 'lucide-react';
 import {
   BabMateriConfig,
@@ -648,8 +649,357 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
     );
   };
 
+  const handleTeacherNameChange = (nextName: string) => {
+    const syncKetua =
+      !metadata.namaKetuaTimPenyusun ||
+      metadata.namaKetuaTimPenyusun === metadata.penyusun;
+    onUpdateMetadata({
+      ...metadata,
+      penyusun: nextName,
+      ...(syncKetua ? { namaKetuaTimPenyusun: nextName } : {}),
+    });
+  };
+
+  const handleTeacherNipChange = (nextNip: string) => {
+    const syncKetuaNip =
+      !metadata.nipKetuaTimPenyusun ||
+      metadata.nipKetuaTimPenyusun === metadata.nipPenyusun;
+    onUpdateMetadata({
+      ...metadata,
+      nipPenyusun: nextNip,
+      ...(syncKetuaNip ? { nipKetuaTimPenyusun: nextNip } : {}),
+    });
+  };
+
   return (
     <div className="space-y-6">
+      {/* Menu Utama: Profil Guru & Identitas Pengajaran (Tersinkron Otomatis) */}
+      <section className="rounded-xl border border-blue-200/90 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.03)] space-y-5">
+        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 pb-4">
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-blue-200 bg-blue-700 text-white">
+              <UserCheck className="h-4 w-4" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold tracking-tight text-slate-900">
+                Menu Utama — Profil Guru &amp; Identitas Pengajaran
+              </h2>
+              <p className="mt-0.5 text-xs text-slate-600">
+                Isi data guru, mata pelajaran, dan kelas/fase di sini. Seluruh isian otomatis tersinkron ke pengaturan Data Soal, acuan CP, Kisi-Kisi, Kartu Soal, dan Kumpulan Soal.
+              </p>
+            </div>
+          </div>
+
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-800 whitespace-nowrap">
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700" />
+            Sinkronisasi Otomatis Aktif
+          </span>
+        </div>
+
+        {/* Identitas Guru & Sekolah */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div>
+            <label
+              htmlFor="profil-nama-guru"
+              className="block text-xs font-semibold text-slate-900"
+            >
+              Nama Guru / Penyusun
+            </label>
+            <input
+              id="profil-nama-guru"
+              type="text"
+              placeholder="Contoh: Budi Santoso, S.Pd., Gr."
+              value={metadata.penyusun}
+              onChange={(e) => handleTeacherNameChange(e.target.value)}
+              className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-700 focus:ring-2 focus:ring-blue-600/15 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="profil-nip-guru"
+              className="block text-xs font-semibold text-slate-900"
+            >
+              NIP / NUPTK Guru
+            </label>
+            <input
+              id="profil-nip-guru"
+              type="text"
+              placeholder="Contoh: 19870412 201101 1 004"
+              value={metadata.nipPenyusun}
+              onChange={(e) => handleTeacherNipChange(e.target.value)}
+              className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-mono text-sm text-slate-900 focus:border-blue-700 focus:ring-2 focus:ring-blue-600/15 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="profil-sekolah"
+              className="block text-xs font-semibold text-slate-900"
+            >
+              Satuan Pendidikan / Sekolah
+            </label>
+            <input
+              id="profil-sekolah"
+              type="text"
+              placeholder="Contoh: SMA Negeri 1 Nusantara"
+              value={metadata.namaSekolah}
+              onChange={(e) =>
+                onUpdateMetadata({ ...metadata, namaSekolah: e.target.value })
+              }
+              className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-700 focus:ring-2 focus:ring-blue-600/15 focus:outline-none"
+            />
+          </div>
+        </div>
+
+        {/* Mata Pelajaran & Kelas/Fase (Tersinkron Langsung dengan CP & Bab/Materi) */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <label
+              htmlFor="profil-mapel"
+              className="block text-xs font-semibold text-slate-900"
+            >
+              Mata Pelajaran (Tersinkron Otomatis)
+            </label>
+            <select
+              id="profil-mapel"
+              value={customSubjectMode ? '__CUSTOM__' : metadata.mataPelajaran}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === '__CUSTOM__') {
+                  setCustomSubjectMode(true);
+                } else {
+                  setCustomSubjectMode(false);
+                  runAutoCpSync(
+                    val,
+                    metadata.kelas,
+                    metadata.fase,
+                    metadata.jenjang,
+                    true
+                  );
+                }
+              }}
+              className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-700 focus:ring-2 focus:ring-blue-600/15 focus:outline-none"
+            >
+              {(
+                [
+                  'Mapel Umum SMA',
+                  'Pendidikan Agama & Budi Pekerti',
+                  'Mapel Dasar Fase E (Kelas X)',
+                  'Mapel Pilihan — MIPA',
+                  'Mapel Pilihan — IPS',
+                  'Mapel Pilihan — Bahasa & Budaya',
+                  'Mapel Pilihan — Prakarya & Vokasi',
+                ] as SmaSubjectGroup[]
+              ).map((groupLabel) => {
+                const items = SMA_SUBJECT_CATALOG.filter(
+                  (s) => s.group === groupLabel
+                );
+                if (items.length === 0) return null;
+                const cpTag =
+                  groupLabel === 'Pendidikan Agama & Budi Pekerti'
+                    ? 'CP 020/2026'
+                    : 'CP 046/2025';
+                return (
+                  <optgroup key={groupLabel} label={`${groupLabel} (${cpTag})`}>
+                    {items.map((item) => (
+                      <option key={item.name} value={item.name}>
+                        {item.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                );
+              })}
+              <option value="__CUSTOM__">+ Tulis Mata Pelajaran Lainnya</option>
+            </select>
+            {customSubjectMode && (
+              <div className="mt-2 flex gap-1.5">
+                <input
+                  type="text"
+                  placeholder="Masukkan nama mata pelajaran SMA..."
+                  value={metadata.mataPelajaran}
+                  onChange={(e) => {
+                    const nextVal = e.target.value;
+                    const analysis = analyzeCpForSubjectAndPhase(
+                      nextVal,
+                      metadata.fase
+                    );
+                    onUpdateMetadata({
+                      ...metadata,
+                      mataPelajaran: nextVal,
+                      cpAcuanRegulasi: analysis.regulationFull,
+                      cpAcuanRingkasan: analysis.summary,
+                    });
+                  }}
+                  className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-900 focus:border-blue-700 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    runAutoCpSync(
+                      metadata.mataPelajaran,
+                      metadata.kelas,
+                      metadata.fase,
+                      'SMA',
+                      true
+                    )
+                  }
+                  className="rounded-lg border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-800 hover:bg-slate-100 whitespace-nowrap"
+                >
+                  Sinkron
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <span className="block text-xs font-semibold text-slate-900">
+              Kelas / Fase SMA (Tersinkron Otomatis)
+            </span>
+            <div className="mt-1.5 grid grid-cols-2 gap-2">
+              <div>
+                <label htmlFor="profil-kelas" className="sr-only">
+                  Kelas SMA
+                </label>
+                <select
+                  id="profil-kelas"
+                  value={metadata.kelas}
+                  onChange={(e) => handleKelasChange(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-700 focus:ring-2 focus:ring-blue-600/15 focus:outline-none"
+                >
+                  {DAFTAR_KELAS.map((k) => (
+                    <option key={k.label} value={k.label}>
+                      {k.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="profil-fase" className="sr-only">
+                  Fase SMA
+                </label>
+                <select
+                  id="profil-fase"
+                  value={metadata.fase}
+                  onChange={(e) => handleFaseChange(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-700 focus:ring-2 focus:ring-blue-600/15 focus:outline-none"
+                >
+                  {DAFTAR_FASE.map((f) => (
+                    <option key={f.value} value={f.value}>
+                      {f.value}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Pengesahan Dokumen (Tanda Tangan Bawah Dokumen) */}
+        <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-4 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+              Pengesahan &amp; Tanda Tangan Dokumen (Kisi-Kisi, Kartu Soal, Kumpulan Soal)
+            </h3>
+            <span className="text-[11px] text-slate-500">
+              Wakasek Kurikulum (Kiri) · Ketua Tim Penyusun (Kanan) · Kepala Sekolah (Bawah Tengah)
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div className="space-y-1.5 rounded-lg border border-slate-200 bg-white p-3">
+              <p className="text-[11px] font-semibold text-slate-700">
+                Mengetahui — Wakasek Kurikulum
+              </p>
+              <input
+                type="text"
+                placeholder="Nama Wakasek Kurikulum"
+                value={metadata.namaWakasekKurikulum || ''}
+                onChange={(e) =>
+                  onUpdateMetadata({
+                    ...metadata,
+                    namaWakasekKurikulum: e.target.value,
+                  })
+                }
+                className="w-full rounded border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 focus:border-blue-700 focus:outline-none"
+              />
+              <input
+                type="text"
+                placeholder="NIP. Wakasek Kurikulum"
+                value={metadata.nipWakasekKurikulum || ''}
+                onChange={(e) =>
+                  onUpdateMetadata({
+                    ...metadata,
+                    nipWakasekKurikulum: e.target.value,
+                  })
+                }
+                className="w-full rounded border border-slate-300 px-2.5 py-1.5 font-mono text-xs text-slate-800 focus:border-blue-700 focus:outline-none"
+              />
+            </div>
+
+            <div className="space-y-1.5 rounded-lg border border-slate-200 bg-white p-3">
+              <p className="text-[11px] font-semibold text-slate-700">
+                Ketua Tim Penyusun
+              </p>
+              <input
+                type="text"
+                placeholder="Nama Ketua Tim Penyusun"
+                value={metadata.namaKetuaTimPenyusun || ''}
+                onChange={(e) =>
+                  onUpdateMetadata({
+                    ...metadata,
+                    namaKetuaTimPenyusun: e.target.value,
+                  })
+                }
+                className="w-full rounded border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 focus:border-blue-700 focus:outline-none"
+              />
+              <input
+                type="text"
+                placeholder="NIP. Ketua Tim Penyusun"
+                value={metadata.nipKetuaTimPenyusun || ''}
+                onChange={(e) =>
+                  onUpdateMetadata({
+                    ...metadata,
+                    nipKetuaTimPenyusun: e.target.value,
+                  })
+                }
+                className="w-full rounded border border-slate-300 px-2.5 py-1.5 font-mono text-xs text-slate-800 focus:border-blue-700 focus:outline-none"
+              />
+            </div>
+
+            <div className="space-y-1.5 rounded-lg border border-slate-200 bg-white p-3">
+              <p className="text-[11px] font-semibold text-slate-700">
+                Menyetujui — Kepala Sekolah
+              </p>
+              <input
+                type="text"
+                placeholder="Nama Kepala Sekolah"
+                value={metadata.namaKepalaSekolah || ''}
+                onChange={(e) =>
+                  onUpdateMetadata({
+                    ...metadata,
+                    namaKepalaSekolah: e.target.value,
+                  })
+                }
+                className="w-full rounded border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 focus:border-blue-700 focus:outline-none"
+              />
+              <input
+                type="text"
+                placeholder="NIP. Kepala Sekolah"
+                value={metadata.nipKepalaSekolah || ''}
+                onChange={(e) =>
+                  onUpdateMetadata({
+                    ...metadata,
+                    nipKepalaSekolah: e.target.value,
+                  })
+                }
+                className="w-full rounded border border-slate-300 px-2.5 py-1.5 font-mono text-xs text-slate-800 focus:border-blue-700 focus:outline-none"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Acuan CP Terbaru di Bagian Atas Data Soal */}
       <section className="rounded-xl border border-slate-200/90 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.03)] space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 pb-4">

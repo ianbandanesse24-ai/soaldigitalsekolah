@@ -21,6 +21,7 @@ import {
   tierFromCognitiveLevel,
 } from '../data/defaultExamData';
 import {
+  buildDocumentSignatureHtml,
   downloadKumpulanSoalExcel,
   downloadKumpulanSoalPdf,
   downloadWordDocument,
@@ -28,6 +29,7 @@ import {
   getShuffledRightColumn,
   resolveQuestionFieldValue,
 } from '../utils/exportHelpers';
+import { DocumentSignatureBlock } from './DocumentSignatureBlock';
 
 interface KumpulanSoalViewProps {
   metadata: ExamMetadata;
@@ -302,6 +304,7 @@ export const KumpulanSoalView: React.FC<KumpulanSoalViewProps> = ({
             </div>`
           : ''
       }
+      ${buildDocumentSignatureHtml(metadata)}
     `;
 
     const safeSubject = metadata.mataPelajaran.replace(/[^a-zA-Z0-9]+/g, '_');
@@ -871,6 +874,8 @@ export const KumpulanSoalView: React.FC<KumpulanSoalViewProps> = ({
             </div>
           </section>
         )}
+
+        <DocumentSignatureBlock metadata={metadata} />
       </article>
     </div>
   );

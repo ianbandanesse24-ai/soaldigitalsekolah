@@ -1,5 +1,5 @@
 export interface SymbolCategory {
-  id: 'operasi' | 'pangkat' | 'relasi' | 'yunani' | 'rumus';
+  id: 'operasi' | 'pangkat' | 'relasi' | 'yunani' | 'sains_bahasa' | 'rumus';
   label: string;
   items: { label: string; value: string; title: string }[];
 }
@@ -7,7 +7,7 @@ export interface SymbolCategory {
 export const MATH_SYMBOL_CATEGORIES: SymbolCategory[] = [
   {
     id: 'operasi',
-    label: 'Operasi & Akar',
+    label: 'Operasi, Akar & Pecahan',
     items: [
       { label: '×', value: '×', title: 'Kali' },
       { label: '÷', value: '÷', title: 'Bagi' },
@@ -28,6 +28,14 @@ export const MATH_SYMBOL_CATEGORIES: SymbolCategory[] = [
       { label: '⅔', value: '⅔', title: 'Dua pertiga' },
       { label: '¼', value: '¼', title: 'Seperempat' },
       { label: '¾', value: '¾', title: 'Tiga perempat' },
+      { label: '⅕', value: '⅕', title: 'Seperlima' },
+      { label: '⅖', value: '⅖', title: 'Dua perlima' },
+      { label: '⅗', value: '⅗', title: 'Tiga perlima' },
+      { label: '⅘', value: '⅘', title: 'Empat perlima' },
+      { label: '⅙', value: '⅙', title: 'Seperenam' },
+      { label: '⅚', value: '⅚', title: 'Lima perenam' },
+      { label: '⅛', value: '⅛', title: 'Seperdelapan' },
+      { label: '|x|', value: '|x|', title: 'Nilai mutlak' },
     ],
   },
   {
@@ -45,6 +53,8 @@ export const MATH_SYMBOL_CATEGORIES: SymbolCategory[] = [
       { label: '⁸', value: '⁸', title: 'Pangkat 8' },
       { label: '⁹', value: '⁹', title: 'Pangkat 9' },
       { label: 'ⁿ', value: 'ⁿ', title: 'Pangkat n' },
+      { label: 'ˣ', value: 'ˣ', title: 'Pangkat x' },
+      { label: 'ʸ', value: 'ʸ', title: 'Pangkat y' },
       { label: '⁺', value: '⁺', title: 'Muatan / pangkat positif' },
       { label: '⁻', value: '⁻', title: 'Muatan / pangkat negatif' },
       { label: '₀', value: '₀', title: 'Indeks 0' },
@@ -55,11 +65,15 @@ export const MATH_SYMBOL_CATEGORIES: SymbolCategory[] = [
       { label: '₅', value: '₅', title: 'Indeks 5' },
       { label: '₆', value: '₆', title: 'Indeks 6' },
       { label: 'ₙ', value: 'ₙ', title: 'Indeks n' },
+      { label: 'ᵢ', value: 'ᵢ', title: 'Indeks i' },
+      { label: 'ⱼ', value: 'ⱼ', title: 'Indeks j' },
+      { label: '₊', value: '₊', title: 'Indeks +' },
+      { label: '₋', value: '₋', title: 'Indeks -' },
     ],
   },
   {
     id: 'relasi',
-    label: 'Relasi & Himpunan',
+    label: 'Relasi, Logika & Himpunan',
     items: [
       { label: '=', value: '=', title: 'Sama dengan' },
       { label: '≠', value: '≠', title: 'Tidak sama dengan' },
@@ -67,20 +81,27 @@ export const MATH_SYMBOL_CATEGORIES: SymbolCategory[] = [
       { label: '≡', value: '≡', title: 'Kongruen / ekuivalen' },
       { label: '≤', value: '≤', title: 'Kurang dari atau sama dengan' },
       { label: '≥', value: '≥', title: 'Lebih dari atau sama dengan' },
+      { label: '∝', value: '∝', title: 'Sebanding dengan' },
       { label: '∈', value: '∈', title: 'Anggota himpunan' },
       { label: '∉', value: '∉', title: 'Bukan anggota himpunan' },
       { label: '⊂', value: '⊂', title: 'Himpunan bagian' },
-      { label: '⊆', value: '⊆', title: 'Himpunan bagian sama' },
+      { label: '⊆', value: '⊆', title: 'Himpunan bagian atau sama' },
       { label: '∪', value: '∪', title: 'Gabungan (Union)' },
       { label: '∩', value: '∩', title: 'Irisan (Intersection)' },
       { label: '∅', value: '∅', title: 'Himpunan kosong' },
-      { label: '∀', value: '∀', title: 'Untuk semua' },
-      { label: '∃', value: '∃', title: 'Terdapat' },
+      { label: '∀', value: '∀', title: 'Kuantor universal (untuk semua)' },
+      { label: '∃', value: '∃', title: 'Kuantor eksistensial (terdapat)' },
+      { label: '¬', value: '¬', title: 'Negasi / ingkaran' },
+      { label: '∧', value: '∧', title: 'Konjungsi (DAN)' },
+      { label: '∨', value: '∨', title: 'Disjungsi (ATAU)' },
       { label: '→', value: '→', title: 'Panah kanan / reaksi / limit' },
       { label: '←', value: '←', title: 'Panah kiri' },
-      { label: '↔', value: '↔', title: 'Reaksi kesetimbangan / biimplikasi' },
+      { label: '↔', value: '↔', title: 'Kesetimbangan / korespondensi' },
+      { label: '⇌', value: '⇌', title: 'Reaksi kesetimbangan kimia bolak-balik' },
       { label: '⇒', value: '⇒', title: 'Implikasi (Maka)' },
       { label: '⇔', value: '⇔', title: 'Biimplikasi (Jika dan hanya jika)' },
+      { label: '∴', value: '∴', title: 'Jadi / oleh karena itu' },
+      { label: '∵', value: '∵', title: 'Karena' },
     ],
   },
   {
@@ -95,14 +116,16 @@ export const MATH_SYMBOL_CATEGORIES: SymbolCategory[] = [
       { label: 'δ', value: 'δ', title: 'Delta kecil' },
       { label: 'Δ', value: 'Δ', title: 'Delta besar / perubahan / diskriminan' },
       { label: 'ε', value: 'ε', title: 'Epsilon' },
-      { label: 'λ', value: 'λ', title: 'Lambda' },
-      { label: 'μ', value: 'μ', title: 'Mu (rata-rata / mikro)' },
-      { label: 'ρ', value: 'ρ', title: 'Rho (massa jenis)' },
+      { label: 'η', value: 'η', title: 'Eta (efisiensi)' },
+      { label: 'λ', value: 'λ', title: 'Lambda (panjang gelombang / nilai eigen)' },
+      { label: 'μ', value: 'μ', title: 'Mu (rata-rata / koefisien gesek / mikro)' },
+      { label: 'ρ', value: 'ρ', title: 'Rho (massa jenis / hambatan jenis)' },
       { label: 'σ', value: 'σ', title: 'Sigma kecil (simpangan baku)' },
       { label: 'Σ', value: 'Σ', title: 'Sigma besar' },
-      { label: 'Φ', value: 'Φ', title: 'Phi' },
+      { label: 'τ', value: 'τ', title: 'Tau (torsi / momen gaya)' },
+      { label: 'Φ', value: 'Φ', title: 'Phi besar (fluks)' },
       { label: 'Ω', value: 'Ω', title: 'Ohm' },
-      { label: 'ω', value: 'ω', title: 'Omega (kecepatan sudut)' },
+      { label: 'ω', value: 'ω', title: 'Omega kecil (kecepatan sudut)' },
       { label: '∑', value: '∑', title: 'Notasi Sigma (penjumlahan)' },
       { label: '∏', value: '∏', title: 'Notasi Pi (perkalian)' },
       { label: '∫', value: '∫', title: 'Integral' },
@@ -112,11 +135,39 @@ export const MATH_SYMBOL_CATEGORIES: SymbolCategory[] = [
       { label: '△', value: '△', title: 'Segitiga' },
       { label: '⊥', value: '⊥', title: 'Tegak lurus' },
       { label: '∥', value: '∥', title: 'Sejajar' },
+      { label: '≅', value: '≅', title: 'Kongruen' },
+      { label: '∼', value: '∼', title: 'Sebangun' },
+    ],
+  },
+  {
+    id: 'sains_bahasa',
+    label: 'Sains, Satuan & Bahasa',
+    items: [
+      { label: '℃', value: '℃', title: 'Derajat Celcius' },
+      { label: '℉', value: '℉', title: 'Derajat Fahrenheit' },
+      { label: 'Å', value: 'Å', title: 'Angstrom' },
+      { label: 'µ', value: 'µ', title: 'Mikro' },
+      { label: '↑', value: '↑', title: 'Gas terlepas / naik' },
+      { label: '↓', value: '↓', title: 'Endapan / turun' },
+      { label: 'ΔH', value: 'ΔH', title: 'Perubahan entalpi' },
+      { label: 'Mᵣ', value: 'Mᵣ', title: 'Massa molekul relatif' },
+      { label: 'Aᵣ', value: 'Aᵣ', title: 'Massa atom relatif' },
+      { label: 'H⁺', value: 'H⁺', title: 'Ion hidrogen' },
+      { label: 'OH⁻', value: 'OH⁻', title: 'Ion hidroksida' },
+      { label: '—', value: '—', title: 'Tanda pisah (em dash)' },
+      { label: '…', value: '…', title: 'Elipsis' },
+      { label: '«', value: '«', title: 'Kurung sudut buka' },
+      { label: '»', value: '»', title: 'Kurung sudut tutup' },
+      { label: '€', value: '€', title: 'Euro' },
+      { label: '£', value: '£', title: 'Pound' },
+      { label: '¥', value: '¥', title: 'Yen' },
+      { label: 'ﷺ', value: 'ﷺ', title: 'Shallallahu alaihi wasallam' },
+      { label: 'ﷻ', value: 'ﷻ', title: 'Jalla jalaluhu' },
     ],
   },
   {
     id: 'rumus',
-    label: 'Template Rumus',
+    label: 'Template Rumus SMA',
     items: [
       {
         label: 'x₁,₂ = (-b ± √(b² - 4ac)) / 2a',
@@ -124,9 +175,9 @@ export const MATH_SYMBOL_CATEGORIES: SymbolCategory[] = [
         title: 'Rumus ABC Persamaan Kuadrat',
       },
       {
-        label: '²log 8 = 3',
-        value: '²log 8 = 3',
-        title: 'Contoh Notasi Logaritma',
+        label: 'ᵃlog b = c ⇔ aᶜ = b',
+        value: '²log 8 = 3 ⇔ 2³ = 8',
+        title: 'Konsep Logaritma',
       },
       {
         label: 'Uₙ = a + (n - 1)b',
@@ -154,14 +205,19 @@ export const MATH_SYMBOL_CATEGORIES: SymbolCategory[] = [
         title: 'Limit Fungsi',
       },
       {
+        label: 'f′(x) = lim(h→0) [f(x+h) - f(x)] / h',
+        value: 'f′(x) = lim(h→0) [f(x+h) - f(x)] / h',
+        title: 'Definisi Turunan Fungsi',
+      },
+      {
         label: '∫ f(x) dx = F(x) + C',
         value: '∫ f(x) dx = F(x) + C',
         title: 'Integral Tak Tentu',
       },
       {
-        label: '∑(i=1..n) xᵢ',
-        value: '∑(i=1..n) xᵢ',
-        title: 'Notasi Sigma',
+        label: 'x̄ = (∑ xᵢ · fᵢ) / ∑ fᵢ',
+        value: 'x̄ = (∑ xᵢ · fᵢ) / ∑ fᵢ',
+        title: 'Rata-Rata Data Berkelompok',
       },
       {
         label: 'F = m · a',
@@ -169,19 +225,34 @@ export const MATH_SYMBOL_CATEGORIES: SymbolCategory[] = [
         title: 'Hukum II Newton',
       },
       {
-        label: 'E = m · c²',
-        value: 'E = m · c²',
-        title: 'Energi Relativistik',
+        label: 'Eₖ = ½m · v²',
+        value: 'Eₖ = ½m · v²',
+        title: 'Energi Kinetik',
+      },
+      {
+        label: 'V = I · R',
+        value: 'V = I · R',
+        title: 'Hukum Ohm',
       },
       {
         label: 'pH = -log[H⁺]',
         value: 'pH = -log[H⁺]',
-        title: 'Rumus Derajat Keasaman Kimia',
+        title: 'Derajat Keasaman Kimia',
       },
       {
-        label: 'H₂O + CO₂ → H₂CO₃',
-        value: 'H₂O + CO₂ → H₂CO₃',
-        title: 'Contoh Persamaan Reaksi Kimia',
+        label: 'H₂O + CO₂ ⇌ H₂CO₃',
+        value: 'H₂O + CO₂ ⇌ H₂CO₃',
+        title: 'Persamaan Reaksi Kesetimbangan',
+      },
+      {
+        label: 'E_d = (%ΔQ) / (%ΔP)',
+        value: 'Ed = (%ΔQ) / (%ΔP)',
+        title: 'Koefisien Elastisitas Permintaan',
+      },
+      {
+        label: 'Y = C + I + G + (X - M)',
+        value: 'Y = C + I + G + (X - M)',
+        title: 'Pendapatan Nasional (Pendekatan Pengeluaran)',
       },
     ],
   },
@@ -199,8 +270,13 @@ const SUPERSCRIPT_MAP: Record<string, string> = {
   '8': '⁸',
   '9': '⁹',
   n: 'ⁿ',
+  x: 'ˣ',
+  y: 'ʸ',
   '+': '⁺',
   '-': '⁻',
+  '=': '⁼',
+  '(': '⁽',
+  ')': '⁾',
 };
 
 const SUBSCRIPT_MAP: Record<string, string> = {
@@ -215,10 +291,15 @@ const SUBSCRIPT_MAP: Record<string, string> = {
   '8': '₈',
   '9': '₉',
   n: 'ₙ',
+  i: 'ᵢ',
+  j: 'ⱼ',
+  k: 'ₖ',
+  '+': '₊',
+  '-': '₋',
 };
 
 /**
- * Mengonversi notasi ketikan seperti x^2, H_2O, <=, >=, !=, ->, \sqrt, \pi
+ * Mengonversi notasi ketikan seperti x^2, H_2O, <=, >=, !=, ->, <->, \sqrt, \pi
  * menjadi simbol matematika/sains Unicode baku agar tampil rapi di aplikasi, PDF, Word, dan Excel.
  */
 export function convertAsciiMathToUnicode(text: string): string {
@@ -233,14 +314,44 @@ export function convertAsciiMathToUnicode(text: string): string {
     .replace(/\\Delta/g, 'Δ')
     .replace(/\\lambda/g, 'λ')
     .replace(/\\mu/g, 'μ')
+    .replace(/\\rho/g, 'ρ')
     .replace(/\\sigma/g, 'σ')
     .replace(/\\Sigma|\\sum/g, '∑')
+    .replace(/\\prod/g, '∏')
     .replace(/\\int/g, '∫')
+    .replace(/\\partial/g, '∂')
+    .replace(/\\nabla/g, '∇')
     .replace(/\\infty|\\inf/g, '∞')
     .replace(/\\times/g, '×')
+    .replace(/\\cdot/g, '·')
     .replace(/\\div/g, '÷')
+    .replace(/\\pm/g, '±')
+    .replace(/\\neq/g, '≠')
+    .replace(/\\leq/g, '≤')
+    .replace(/\\geq/g, '≥')
+    .replace(/\\approx/g, '≈')
+    .replace(/\\in\b/g, '∈')
+    .replace(/\\notin\b/g, '∉')
+    .replace(/\\subset/g, '⊂')
+    .replace(/\\cup/g, '∪')
+    .replace(/\\cap/g, '∩')
+    .replace(/\\forall/g, '∀')
+    .replace(/\\exists/g, '∃')
+    .replace(/\\neg/g, '¬')
+    .replace(/\\land/g, '∧')
+    .replace(/\\lor/g, '∨')
+    .replace(/\\angle/g, '∠')
+    .replace(/\\triangle/g, '△')
+    .replace(/\\perp/g, '⊥')
+    .replace(/\\parallel/g, '∥')
     .replace(/\\deg/g, '°')
     .replace(/\\Omega/g, 'Ω')
+    .replace(/\\omega/g, 'ω')
+    .replace(/\\rightleftharpoons/g, '⇌')
+    .replace(/\\Rightarrow/g, '⇒')
+    .replace(/\\Leftrightarrow/g, '⇔')
+    .replace(/\\rightarrow/g, '→')
+    .replace(/<->/g, '⇌')
     .replace(/<=>/g, '⇔')
     .replace(/=>/g, '⇒')
     .replace(/->/g, '→')
@@ -250,25 +361,25 @@ export function convertAsciiMathToUnicode(text: string): string {
     .replace(/!=/g, '≠')
     .replace(/~=/g, '≈')
     .replace(/\+-/g, '±')
-    .replace(/\^\{([0-9n+-]+)\}/g, (_, chars: string) =>
+    .replace(/\^\{([0-9nxy+\-=()]+)\}/g, (_, chars: string) =>
       chars
         .split('')
         .map((c) => SUPERSCRIPT_MAP[c] ?? c)
         .join('')
     )
-    .replace(/\^([0-9n+-]+)/g, (_, chars: string) =>
+    .replace(/\^([0-9nxy+\-]+)/g, (_, chars: string) =>
       chars
         .split('')
         .map((c) => SUPERSCRIPT_MAP[c] ?? c)
         .join('')
     )
-    .replace(/_\{([0-9n]+)\}/g, (_, chars: string) =>
+    .replace(/_\{([0-9nijk+\-]+)\}/g, (_, chars: string) =>
       chars
         .split('')
         .map((c) => SUBSCRIPT_MAP[c] ?? c)
         .join('')
     )
-    .replace(/_([0-9n]+)/g, (_, chars: string) =>
+    .replace(/_([0-9nijk]+)/g, (_, chars: string) =>
       chars
         .split('')
         .map((c) => SUBSCRIPT_MAP[c] ?? c)

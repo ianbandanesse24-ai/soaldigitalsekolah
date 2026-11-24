@@ -36,6 +36,7 @@ import {
   normalizeCustomFieldKey,
 } from '../utils/autoFillAcuan';
 import {
+  buildDocumentSignatureHtml,
   downloadKartuSoalExcel,
   downloadKartuSoalPdf,
   downloadTemplateAcuanKartuSoal,
@@ -44,6 +45,7 @@ import {
   resolveQuestionFieldValue,
 } from '../utils/exportHelpers';
 import { useMathFieldEditor } from '../hooks/useMathFieldEditor';
+import { DocumentSignatureBlock } from './DocumentSignatureBlock';
 import { FormatAcuanUploader } from './FormatAcuanUploader';
 import { MathSymbolBar } from './MathSymbolBar';
 
@@ -275,7 +277,7 @@ export const KartuSoalView: React.FC<KartuSoalViewProps> = ({
     downloadWordDocument(
       `Kartu_Soal_${safeSubject}.doc`,
       `Kartu Soal ${metadata.mataPelajaran}`,
-      cardsHtml
+      `${cardsHtml}${buildDocumentSignatureHtml(metadata)}`
     );
   };
 
@@ -1048,6 +1050,15 @@ export const KartuSoalView: React.FC<KartuSoalViewProps> = ({
             </article>
           );
         })}
+
+        {questions.length > 0 && (
+          <section className="rounded-xl border border-slate-200/90 bg-white px-6 pb-6 pt-2 shadow-[0_1px_2px_rgba(15,23,42,0.03)] print:rounded-none print:border-0 print:px-0 print:shadow-none">
+            <DocumentSignatureBlock
+              metadata={metadata}
+              className="mt-2 border-t-0 pt-4"
+            />
+          </section>
+        )}
       </div>
     </div>
   );
