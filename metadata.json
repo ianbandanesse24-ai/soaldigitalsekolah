@@ -1,0 +1,6 @@
+{
+  "name": "NaskahUji — Pembuat Paket & Bank Soal",
+  "description": "Aplikasi penyusunan perangkat penilaian pendidikan: Data Soal (PG, Esai, Jawaban Singkat, Menjodohkan), Kisi-Kisi Soal, Kartu Soal dengan unggah format acuan, serta Kumpulan Soal siap cetak.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
