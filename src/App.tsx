@@ -469,7 +469,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50 text-slate-900">
+    <div className="flex min-h-screen bg-gradient-to-br from-slate-100/90 via-sky-50/20 to-indigo-50/25 text-slate-900">
       <SidebarNav
         activeModule={activeModule}
         onSelectModule={setActiveModule}
@@ -484,13 +484,13 @@ export default function App() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Top Bar (Contextual Breadcrumb + Actions + User / Admin Master) */}
-        <header className="no-print sticky top-0 z-30 flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 bg-white/95 backdrop-blur-sm px-4 py-2 sm:flex-nowrap sm:px-6 lg:px-8">
+        <header className="no-print sticky top-0 z-30 flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-slate-200/90 bg-white/95 backdrop-blur-md px-4 py-2 sm:flex-nowrap sm:px-6 lg:px-8 shadow-xs">
           <div className="flex items-center gap-3 min-w-0">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Buka menu navigasi"
-              className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 lg:hidden"
+              className="rounded-xl p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 lg:hidden transition-colors"
             >
               <Menu className="h-5 w-5" />
             </button>
@@ -499,19 +499,19 @@ export default function App() {
               aria-label="Breadcrumb"
               className="flex items-center gap-2 text-sm min-w-0"
             >
-              <span className="hidden md:inline font-medium text-slate-500 whitespace-nowrap">
+              <span className="hidden md:inline font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-700 whitespace-nowrap">
                 Soal Digital Sekolah
               </span>
               <span className="hidden md:inline text-slate-300" aria-hidden="true">
                 /
               </span>
-              <span className="font-medium text-slate-700 truncate max-w-[140px] sm:max-w-[200px]">
+              <span className="font-semibold text-slate-800 truncate max-w-[140px] sm:max-w-[200px]">
                 {project.metadata.mataPelajaran}
               </span>
               <span className="text-slate-300" aria-hidden="true">
                 /
               </span>
-              <span className="font-semibold text-slate-900 whitespace-nowrap">
+              <span className="font-bold text-blue-700 whitespace-nowrap">
                 {MODULE_TITLES[activeModule]}
               </span>
             </nav>
@@ -521,12 +521,16 @@ export default function App() {
             <button
               type="button"
               onClick={handleManualSave}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors whitespace-nowrap shrink-0"
+              className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap shrink-0 shadow-xs ${
+                saveFeedback
+                  ? 'border-emerald-600 bg-emerald-600 text-white'
+                  : 'border-slate-300 bg-white text-slate-700 hover:bg-blue-50/80 hover:text-blue-700 hover:border-blue-300'
+              }`}
             >
               {saveFeedback ? (
                 <>
-                  <Check className="h-3.5 w-3.5 text-emerald-700" />
-                  Tersimpan
+                  <Check className="h-3.5 w-3.5 text-white" />
+                  Tersimpan!
                 </>
               ) : (
                 <>
@@ -545,21 +549,21 @@ export default function App() {
                   window.print();
                 }
               }}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-blue-700 px-3.5 py-2 text-xs font-semibold text-white hover:bg-blue-800 transition-colors whitespace-nowrap shrink-0"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-3.5 py-2 text-xs font-semibold text-white shadow-sm hover:shadow transition-all whitespace-nowrap shrink-0"
             >
               <Printer className="h-3.5 w-3.5" />
               {activeModule === 'data_soal' ? 'Lihat Kumpulan Soal' : 'Cetak Halaman'}
             </button>
 
             {/* User Session Badge & Admin Master / Logout */}
-            <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-left shrink-0">
+            <div className="flex items-center gap-2.5 rounded-xl border border-amber-200/90 bg-gradient-to-r from-amber-50/80 via-white to-blue-50/60 px-3 py-1.5 text-left shrink-0 shadow-xs">
               {currentUser.role === 'admin' ? (
-                <ShieldCheck className="h-4 w-4 text-blue-700 shrink-0" />
+                <ShieldCheck className="h-4 w-4 text-amber-600 shrink-0" />
               ) : (
                 <UserIcon className="h-4 w-4 text-indigo-600 shrink-0" />
               )}
               <div className="leading-tight">
-                <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-amber-800">
                   {currentUser.role === 'admin' ? 'Admin Master' : 'Pengguna / Guru'}
                 </span>
                 <span className="block text-xs font-bold text-slate-900 whitespace-nowrap">
@@ -570,9 +574,9 @@ export default function App() {
                 type="button"
                 onClick={handleLogout}
                 title="Keluar / Ganti Akun"
-                className="ml-1 p-1.5 text-slate-400 hover:text-rose-600 hover:bg-white rounded-lg transition-colors"
+                className="ml-1 p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>

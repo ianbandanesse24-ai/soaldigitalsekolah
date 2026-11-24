@@ -3,6 +3,7 @@ import {
   BookCheck,
   Calculator,
   CheckCircle2,
+  ClipboardList,
   Lock,
   Plus,
   RefreshCw,
@@ -674,24 +675,29 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Menu Utama: Profil Guru & Identitas Pengajaran (Tersinkron Otomatis) */}
-      <section className="rounded-xl border border-blue-200/90 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.03)] space-y-5">
-        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 pb-4">
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-blue-200 bg-blue-700 text-white">
-              <UserCheck className="h-4 w-4" />
+      <section className="rounded-2xl border-t-4 border-t-indigo-600 border-x border-b border-slate-200/90 bg-gradient-to-b from-indigo-50/20 via-white to-white p-6 shadow-sm space-y-5">
+        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200/80 pb-4">
+          <div className="flex items-start gap-3.5">
+            <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-blue-700 text-white shadow-sm border border-indigo-500/30">
+              <UserCheck className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold tracking-tight text-slate-900">
-                Menu Utama — Profil Guru &amp; Identitas Pengajaran
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold tracking-tight text-slate-900">
+                  Menu Utama — Profil Guru &amp; Identitas Pengajaran
+                </h2>
+                <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800">
+                  UTAMA
+                </span>
+              </div>
               <p className="mt-0.5 text-xs text-slate-600">
                 Isi data guru, mata pelajaran, dan kelas/fase di sini. Seluruh isian otomatis tersinkron ke pengaturan Data Soal, acuan CP, Kisi-Kisi, Kartu Soal, dan Kumpulan Soal.
               </p>
             </div>
           </div>
 
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-800 whitespace-nowrap">
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700" />
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 whitespace-nowrap shadow-2xs">
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
             Sinkronisasi Otomatis Aktif
           </span>
         </div>
@@ -1001,18 +1007,23 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
       </section>
 
       {/* Acuan CP Terbaru di Bagian Atas Data Soal */}
-      <section className="rounded-xl border border-slate-200/90 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.03)] space-y-4">
-        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 pb-4">
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-700">
-              <BookCheck className="h-4 w-4" />
+      <section className="rounded-2xl border-t-4 border-t-sky-600 border-x border-b border-slate-200/90 bg-gradient-to-b from-sky-50/20 via-white to-white p-6 shadow-sm space-y-4">
+        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200/80 pb-4">
+          <div className="flex items-start gap-3.5">
+            <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-sky-600 to-blue-700 text-white shadow-sm border border-sky-500/30">
+              <BookCheck className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-semibold text-slate-900">
-                Acuan Capaian Pembelajaran (CP) Terbaru SMA — Analisis & Sinkron Otomatis
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold tracking-tight text-slate-900">
+                  Acuan Capaian Pembelajaran (CP) Terbaru SMA — Analisis &amp; Sinkron Otomatis
+                </h2>
+                <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-800">
+                  CP 2025/2026
+                </span>
+              </div>
               <p className="mt-0.5 text-xs text-slate-600">
-                Khusus jenjang <strong>SMA (Fase E & Fase F)</strong>: otomatis menggunakan <strong>CP 046 Tahun 2025</strong> untuk Mapel Umum & Mapel Pilihan SMA serta <strong>CP 020 Tahun 2026</strong> untuk Pendidikan Agama & Budi Pekerti.
+                Khusus jenjang <strong>SMA (Fase E &amp; Fase F)</strong>: otomatis menggunakan <strong>CP 046 Tahun 2025</strong> untuk Mapel Umum &amp; Mapel Pilihan SMA serta <strong>CP 020 Tahun 2026</strong> untuk Pendidikan Agama &amp; Budi Pekerti.
               </p>
             </div>
           </div>
@@ -1028,10 +1039,10 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
                 false
               )
             }
-            className="inline-flex items-center gap-1.5 rounded-lg border border-blue-700 bg-blue-50 px-3.5 py-2 text-xs font-semibold text-blue-800 hover:bg-blue-100 active:scale-[0.99] transition-all whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 px-4 py-2 text-xs font-bold text-white shadow-xs hover:shadow active:scale-[0.99] transition-all whitespace-nowrap"
           >
             <RefreshCw className="h-3.5 w-3.5" />
-            Analisis & Sinkron CP Otomatis
+            Analisis &amp; Sinkron CP Otomatis
           </button>
         </div>
 
@@ -1115,14 +1126,26 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
       </section>
 
       {/* Pengaturan Data Soal: A, B, C, D, E, F */}
-      <section className="rounded-xl border border-slate-200/90 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.03)] space-y-6">
-        <div className="border-b border-slate-200 pb-4">
-          <h2 className="text-lg font-semibold tracking-tight text-slate-900">
-            1. Data Soal (Jenjang SMA)
-          </h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Pilih mata pelajaran umum atau pilihan SMA serta kelas/fase (E atau F) untuk memetakan Bab dan Lingkup Materi secara otomatis, lalu atur bentuk soal, tingkatan LOTS/MOTS/HOTS, dan bobot total 100.
-          </p>
+      <section className="rounded-2xl border-t-4 border-t-emerald-600 border-x border-b border-slate-200/90 bg-gradient-to-b from-emerald-50/20 via-white to-white p-6 shadow-sm space-y-6">
+        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200/80 pb-4">
+          <div className="flex items-start gap-3.5">
+            <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white shadow-sm border border-emerald-500/30">
+              <ClipboardList className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold tracking-tight text-slate-900">
+                  1. Data Soal (Jenjang SMA Fase E &amp; F)
+                </h2>
+                <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                  DISTRIBUSI BAB
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs text-slate-600">
+                Pilih mata pelajaran umum atau pilihan SMA serta kelas/fase (E atau F) untuk memetakan Bab dan Lingkup Materi secara otomatis, lalu atur bentuk soal, tingkatan LOTS/MOTS/HOTS, dan bobot total 100.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Baris A, B, C */}
@@ -1728,33 +1751,34 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
 
       {/* Ringkasan Pembagian Bobot Otomatis & Sebaran Tingkatan Soal */}
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <div className="rounded-xl border border-slate-200/90 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.03)] lg:col-span-7">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
+        <div className="rounded-2xl border-t-4 border-t-amber-500 border-x border-b border-slate-200/90 bg-gradient-to-b from-amber-50/20 via-white to-white p-6 shadow-sm lg:col-span-7">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/80 pb-3">
             <div>
-              <h3 className="text-sm font-semibold text-slate-900">
-                Distribusi Otomatis Bobot Soal (Total Wajib 100)
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-slate-900">
+                  Distribusi Otomatis Bobot Soal (Total Wajib 100)
+                </h3>
+                <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                  SKOR 100
+                </span>
+              </div>
               <p className="mt-0.5 text-xs text-slate-500">
                 Pembagian bobot skor otomatis untuk {questions.length} butir soal aktif.
               </p>
             </div>
-            <span className="font-mono text-sm font-bold text-emerald-700 tabular-nums">
+            <span className="font-mono text-sm font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 tabular-nums shadow-2xs">
               Total Skor: {totalBobotAktif} / 100
             </span>
           </div>
 
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-2xs">
             <table className="min-w-full border-collapse text-xs">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50 text-slate-700">
-                  <th className="px-3 py-2 text-left font-semibold">Jenis Soal</th>
-                  <th className="px-3 py-2 text-right font-semibold">Jumlah Butir</th>
-                  <th className="px-3 py-2 text-right font-semibold">
-                    Bobot Rata-Rata
-                  </th>
-                  <th className="px-3 py-2 text-right font-semibold">
-                    Subtotal Bobot
-                  </th>
+                <tr className="border-b border-slate-200 bg-gradient-to-r from-amber-50/80 to-slate-50 text-slate-800">
+                  <th className="px-3.5 py-2.5 text-left font-bold">Jenis Soal</th>
+                  <th className="px-3.5 py-2.5 text-right font-bold">Jumlah Butir</th>
+                  <th className="px-3.5 py-2.5 text-right font-bold">Bobot Rata-Rata</th>
+                  <th className="px-3.5 py-2.5 text-right font-bold">Subtotal Bobot</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -1767,17 +1791,18 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
                     ) / 100;
                   const avg = Math.round((subtotal / items.length) * 100) / 100;
                   return (
-                    <tr key={t}>
-                      <td className="px-3 py-2 font-medium text-slate-900">
-                        {LABEL_JENIS_SOAL[t]}
+                    <tr key={t} className="hover:bg-amber-50/20 transition-colors">
+                      <td className="px-3.5 py-2.5 font-semibold text-slate-900 flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${t === 'PG' ? 'bg-blue-600' : t === 'JAWABAN_SINGKAT' ? 'bg-sky-500' : t === 'MENJODOHKAN' ? 'bg-amber-500' : 'bg-emerald-600'}`} />
+                        <span>{LABEL_JENIS_SOAL[t]}</span>
                       </td>
-                      <td className="px-3 py-2 text-right font-mono text-slate-700 tabular-nums">
+                      <td className="px-3.5 py-2.5 text-right font-mono text-slate-700 tabular-nums">
                         {items.length}
                       </td>
-                      <td className="px-3 py-2 text-right font-mono text-slate-700 tabular-nums">
+                      <td className="px-3.5 py-2.5 text-right font-mono text-slate-700 tabular-nums">
                         {avg}
                       </td>
-                      <td className="px-3 py-2 text-right font-mono font-semibold text-slate-900 tabular-nums">
+                      <td className="px-3.5 py-2.5 text-right font-mono font-bold text-slate-900 tabular-nums">
                         {subtotal}
                       </td>
                     </tr>
@@ -1785,15 +1810,15 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
                 })}
               </tbody>
               <tfoot>
-                <tr className="border-t border-slate-200 bg-slate-50">
-                  <td className="px-3 py-2 font-semibold text-slate-900">
+                <tr className="border-t-2 border-slate-200 bg-amber-50/30">
+                  <td className="px-3.5 py-2.5 font-bold text-slate-900">
                     Total Keseluruhan
                   </td>
-                  <td className="px-3 py-2 text-right font-mono font-semibold text-slate-900 tabular-nums">
+                  <td className="px-3.5 py-2.5 text-right font-mono font-bold text-slate-900 tabular-nums">
                     {questions.length}
                   </td>
-                  <td className="px-3 py-2 text-right text-slate-500">—</td>
-                  <td className="px-3 py-2 text-right font-mono text-sm font-bold text-emerald-700 tabular-nums">
+                  <td className="px-3.5 py-2.5 text-right text-slate-400">—</td>
+                  <td className="px-3.5 py-2.5 text-right font-mono text-sm font-bold text-emerald-700 tabular-nums">
                     {totalBobotAktif}
                   </td>
                 </tr>
@@ -1802,23 +1827,28 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200/90 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.03)] lg:col-span-5">
-          <div className="border-b border-slate-200 pb-3">
-            <h3 className="text-sm font-semibold text-slate-900">
-              Sebaran Keterangan Tingkatan Soal
-            </h3>
+        <div className="rounded-2xl border-t-4 border-t-violet-600 border-x border-b border-slate-200/90 bg-gradient-to-b from-violet-50/20 via-white to-white p-6 shadow-sm lg:col-span-5">
+          <div className="border-b border-slate-200/80 pb-3">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-bold text-slate-900">
+                Sebaran Keterangan Tingkatan Soal
+              </h3>
+              <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-800">
+                KOGNITIF
+              </span>
+            </div>
             <p className="mt-0.5 text-xs text-slate-500">
               Keterangan LOTS, MOTS, dan HOTS tersemat pada setiap nomor soal di Kisi-Kisi, Kartu Soal, dan Kumpulan Soal.
             </p>
           </div>
 
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-2xs">
             <table className="min-w-full border-collapse text-xs">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50 text-slate-700">
-                  <th className="px-3 py-2 text-left font-semibold">Tingkatan</th>
-                  <th className="px-3 py-2 text-right font-semibold">Target</th>
-                  <th className="px-3 py-2 text-left font-semibold">Nomor Soal</th>
+                <tr className="border-b border-slate-200 bg-gradient-to-r from-violet-50/80 to-slate-50 text-slate-800">
+                  <th className="px-3.5 py-2.5 text-left font-bold">Tingkatan</th>
+                  <th className="px-3.5 py-2.5 text-right font-bold">Target</th>
+                  <th className="px-3.5 py-2.5 text-left font-bold">Nomor Soal</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -1828,18 +1858,33 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
                       (q.tingkatanSoal || tierFromCognitiveLevel(q.levelKognitif)) ===
                       tier
                   );
+                  const tierColors: Record<QuestionTier, { badge: string; text: string }> = {
+                    LOTS: { badge: 'bg-emerald-100 text-emerald-800 border-emerald-200', text: 'text-emerald-700' },
+                    MOTS: { badge: 'bg-amber-100 text-amber-800 border-amber-200', text: 'text-amber-700' },
+                    HOTS: { badge: 'bg-rose-100 text-rose-800 border-rose-200', text: 'text-rose-700' },
+                  };
                   return (
-                    <tr key={tier}>
-                      <td className="px-3 py-2 font-semibold text-slate-900">
-                        {tier}
+                    <tr key={tier} className="hover:bg-violet-50/20 transition-colors">
+                      <td className="px-3.5 py-2.5 font-bold">
+                        <span className={`inline-block px-2 py-0.5 rounded-md font-mono text-[11px] font-bold border ${tierColors[tier].badge}`}>
+                          {tier}
+                        </span>
                       </td>
-                      <td className="px-3 py-2 text-right font-mono text-slate-700 tabular-nums">
+                      <td className="px-3.5 py-2.5 text-right font-mono font-semibold text-slate-700 tabular-nums">
                         {tingkatanPersentase[tier]}% ({matched.length})
                       </td>
-                      <td className="px-3 py-2 font-mono text-slate-700 tabular-nums">
-                        {matched.length > 0
-                          ? matched.map((m) => `#${m.nomor}`).join(', ')
-                          : '—'}
+                      <td className="px-3.5 py-2.5 font-mono text-slate-700 tabular-nums">
+                        {matched.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {matched.map((m) => (
+                              <span key={m.id} className="px-1.5 py-0.2 bg-slate-100 rounded text-[11px] font-semibold text-slate-700">
+                                #{m.nomor}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          '—'
+                        )}
                       </td>
                     </tr>
                   );

@@ -923,9 +923,21 @@ export const INITIAL_QUESTIONS: QuestionItem[] = redistributeBobotTotal100(
   )
 );
 
+const INITIAL_METADATA_EMPTY: ExamMetadata = {
+  ...INITIAL_METADATA,
+  babMateriList: [],
+  jumlahTotalSoal: 0,
+  komposisi: {
+    PG: 0,
+    JAWABAN_SINGKAT: 0,
+    MENJODOHKAN: 0,
+    ESAY: 0,
+  },
+};
+
 export const INITIAL_PROJECT_STATE: ExamProjectState = {
-  metadata: INITIAL_METADATA,
-  questions: INITIAL_QUESTIONS,
+  metadata: INITIAL_METADATA_EMPTY,
+  questions: [],
   kisiKisiColumns: DEFAULT_KISI_KISI_COLUMNS,
   kisiKisiAcuan: null,
   kartuSoalFields: DEFAULT_KARTU_SOAL_FIELDS,

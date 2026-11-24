@@ -526,16 +526,16 @@ export const KartuSoalView: React.FC<KartuSoalViewProps> = ({
       />
 
       {/* Toolbar Navigasi, Simbol Matematika & Download Kartu Soal */}
-      <section className="no-print rounded-xl border border-slate-200/90 bg-white px-5 py-4 shadow-[0_1px_2px_rgba(15,23,42,0.03)] space-y-3.5">
+      <section className="no-print rounded-2xl border-t-4 border-t-amber-500 border-x border-b border-slate-200/90 bg-white px-5 py-4 shadow-sm space-y-3.5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-1">
+            <div className="flex items-center gap-1 rounded-xl bg-slate-100 p-1">
               <button
                 type="button"
                 onClick={() => setViewMode('single')}
-                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
+                className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all whitespace-nowrap ${
                   viewMode === 'single'
-                    ? 'bg-white text-slate-900 shadow-xs'
+                    ? 'bg-amber-500 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -544,9 +544,9 @@ export const KartuSoalView: React.FC<KartuSoalViewProps> = ({
               <button
                 type="button"
                 onClick={() => setViewMode('all')}
-                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
+                className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all whitespace-nowrap ${
                   viewMode === 'all'
-                    ? 'bg-white text-slate-900 shadow-xs'
+                    ? 'bg-amber-500 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -561,18 +561,18 @@ export const KartuSoalView: React.FC<KartuSoalViewProps> = ({
                   disabled={safeIndex <= 0}
                   onClick={() => setActiveIndex((i) => Math.max(0, i - 1))}
                   aria-label="Kartu sebelumnya"
-                  className="rounded-lg border border-slate-300 bg-white p-1.5 text-slate-700 hover:bg-slate-50 disabled:opacity-40"
+                  className="rounded-xl border border-slate-300 bg-white p-1.5 text-slate-700 hover:bg-slate-50 disabled:opacity-40 transition-colors shadow-2xs"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
                 <select
                   value={safeIndex}
                   onChange={(e) => setActiveIndex(Number(e.target.value))}
-                  className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 font-mono text-xs font-medium text-slate-900 focus:border-blue-700 focus:outline-none"
+                  className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 font-mono text-xs font-bold text-slate-900 focus:border-amber-600 focus:outline-none shadow-2xs"
                 >
                   {questions.map((q, idx) => (
                     <option key={q.id} value={idx}>
-                      Kartu #{q.nomor} — {SHORT_LABEL_JENIS_SOAL[q.type]}
+                      Kartu #{q.nomor} — {SHORT_LABEL_JENIS_SOAL[q.type]} ({q.tingkatanSoal || tierFromCognitiveLevel(q.levelKognitif)})
                     </option>
                   ))}
                 </select>
@@ -583,7 +583,7 @@ export const KartuSoalView: React.FC<KartuSoalViewProps> = ({
                     setActiveIndex((i) => Math.min(questions.length - 1, i + 1))
                   }
                   aria-label="Kartu berikutnya"
-                  className="rounded-lg border border-slate-300 bg-white p-1.5 text-slate-700 hover:bg-slate-50 disabled:opacity-40"
+                  className="rounded-xl border border-slate-300 bg-white p-1.5 text-slate-700 hover:bg-slate-50 disabled:opacity-40 transition-colors shadow-2xs"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>
@@ -595,44 +595,44 @@ export const KartuSoalView: React.FC<KartuSoalViewProps> = ({
             <button
               type="button"
               onClick={() => setShowMathBar((v) => !v)}
-              className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors whitespace-nowrap ${
+              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-all whitespace-nowrap shadow-2xs ${
                 showMathBar
-                  ? 'border-blue-700 bg-blue-50 text-blue-800'
-                  : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                  ? 'border-amber-600 bg-amber-600 text-white'
+                  : 'border-slate-300 bg-white text-slate-700 hover:bg-amber-50/70 hover:text-amber-800 hover:border-amber-300'
               }`}
             >
-              <Calculator className="h-3.5 w-3.5 text-blue-700" />
-              {showMathBar ? 'Sembunyikan Simbol' : 'Simbol & Rumus'}
+              <Calculator className="h-3.5 w-3.5" />
+              {showMathBar ? 'Tutup Simbol' : 'Simbol & Rumus'}
             </button>
             <button
               type="button"
               disabled={isExportingPdf}
               onClick={handleExportPdf}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60 whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50/80 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100 hover:border-rose-300 disabled:opacity-60 whitespace-nowrap transition-all shadow-2xs"
             >
-              <FileDown className="h-3.5 w-3.5 text-red-700" />
+              <FileDown className="h-3.5 w-3.5 text-rose-600" />
               {isExportingPdf ? 'Menyiapkan PDF...' : 'Download PDF'}
             </button>
             <button
               type="button"
               onClick={handleExportWord}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50/80 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100 hover:border-blue-300 whitespace-nowrap transition-all shadow-2xs"
             >
-              <FileText className="h-3.5 w-3.5 text-blue-700" />
+              <FileText className="h-3.5 w-3.5 text-blue-600" />
               Download Word
             </button>
             <button
               type="button"
               onClick={() => downloadKartuSoalExcel(metadata, questions, fields)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50/80 px-3 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300 whitespace-nowrap transition-all shadow-2xs"
             >
-              <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-700" />
+              <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600" />
               Download Excel
             </button>
             <button
               type="button"
               onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-blue-700 px-3.5 py-2 text-xs font-semibold text-white hover:bg-blue-800 whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:shadow whitespace-nowrap transition-all"
             >
               <Printer className="h-3.5 w-3.5" />
               Cetak
