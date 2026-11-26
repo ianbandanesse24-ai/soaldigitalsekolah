@@ -18,13 +18,19 @@
 
 @media print {
   @page {
-    size: A4;
-    margin: 14mm 15mm;
+    size: 215.9mm 330mm;
+    margin: 15mm 18mm;
   }
 
   body {
     background: #ffffff !important;
     color: #0f172a !important;
+    font-family: 'Times New Roman', Times, serif !important;
+    font-size: 11pt !important;
+  }
+
+  table th, table td {
+    font-size: 11pt !important;
   }
 
   .no-print {

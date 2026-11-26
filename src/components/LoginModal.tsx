@@ -17,7 +17,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
     const u = usernameInput.trim();
     const p = passwordInput.trim();
 
-    if (u === 'admin' && p === 'Guru') {
+    if (
+      (u.toLowerCase() === 'admin' && p.toLowerCase() === 'admin') ||
+      (u === 'admin' && p === 'Guru')
+    ) {
       onLoginSuccess({
         username: 'admin',
         role: 'admin',

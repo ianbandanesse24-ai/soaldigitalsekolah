@@ -108,27 +108,8 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return btoa(binary);
 }
 
-async function ensurePdfUnicodeFont(doc: jsPDF): Promise<'DejaVuSans' | 'helvetica'> {
-  try {
-    if (!cachedRegularFontBase64) {
-      const res = await fetch('/fonts/DejaVuSans.ttf');
-      if (!res.ok) throw new Error('Font reguler gagal dimuat');
-      cachedRegularFontBase64 = arrayBufferToBase64(await res.arrayBuffer());
-    }
-    if (!cachedBoldFontBase64) {
-      const resBold = await fetch('/fonts/DejaVuSans-Bold.ttf');
-      if (!resBold.ok) throw new Error('Font tebal gagal dimuat');
-      cachedBoldFontBase64 = arrayBufferToBase64(await resBold.arrayBuffer());
-    }
-
-    doc.addFileToVFS('DejaVuSans.ttf', cachedRegularFontBase64);
-    doc.addFont('DejaVuSans.ttf', 'DejaVuSans', 'normal');
-    doc.addFileToVFS('DejaVuSans-Bold.ttf', cachedBoldFontBase64);
-    doc.addFont('DejaVuSans-Bold.ttf', 'DejaVuSans', 'bold');
-    return 'DejaVuSans';
-  } catch {
-    return 'helvetica';
-  }
+async function ensurePdfUnicodeFont(doc: jsPDF): Promise<'times' | 'DejaVuSans' | 'helvetica'> {
+  return 'times';
 }
 
 export function sanitizePdfText(text: string, allowUnicode = false): string {
@@ -293,7 +274,7 @@ function appendSignatureBlockToPdf(
   margin: number,
   pageWidth: number,
   pageHeight: number,
-  fontName: 'DejaVuSans' | 'helvetica',
+  fontName: 'DejaVuSans' | 'helvetica' | 'times',
   unicodeReady: boolean,
   metadata: ExamMetadata
 ): void {
@@ -412,19 +393,19 @@ export async function downloadKisiKisiPdf(
   questions: QuestionItem[],
   columns: ReferenceColumnDef[]
 ): Promise<void> {
-  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [330, 215.9] });
   const fontName = await ensurePdfUnicodeFont(doc);
-  const unicodeReady = fontName === 'DejaVuSans';
+  const unicodeReady = false;
 
   doc.setFontSize(13);
   doc.setFont(fontName, 'bold');
-  doc.text('KISI-KISI PENULISAN SOAL', 148.5, 14, { align: 'center' });
+  doc.text('KISI-KISI PENULISAN SOAL', 165, 14, { align: 'center' });
 
   doc.setFontSize(9.5);
   doc.setFont(fontName, 'normal');
   doc.text(
     sanitizePdfText(`${metadata.judulUjian} - ${metadata.kurikulum}`, unicodeReady),
-    148.5,
+    165,
     20,
     { align: 'center' }
   );
@@ -442,12 +423,12 @@ export async function downloadKisiKisiPdf(
   );
   doc.text(
     sanitizePdfText(`Kelas / Fase       : ${metadata.kelas} / ${metadata.fase}`, unicodeReady),
-    155,
+    170,
     28
   );
   doc.text(
     sanitizePdfText(`Jumlah Soal        : ${questions.length} Butir`, unicodeReady),
-    155,
+    170,
     33
   );
 
@@ -461,7 +442,7 @@ export async function downloadKisiKisiPdf(
     ),
     styles: {
       font: fontName,
-      fontSize: 8,
+      fontSize: 10,
       cellPadding: 2.2,
       valign: 'top',
       lineColor: [203, 213, 225],
@@ -472,6 +453,7 @@ export async function downloadKisiKisiPdf(
       fillColor: [241, 245, 249],
       textColor: [15, 23, 42],
       fontStyle: 'bold',
+      fontSize: 10,
     },
     margin: { left: 14, right: 14 },
   });
@@ -559,9 +541,9 @@ export async function downloadKartuSoalPdf(
   questions: QuestionItem[],
   fields: ReferenceColumnDef[]
 ): Promise<void> {
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [215.9, 330] });
   const fontName = await ensurePdfUnicodeFont(doc);
-  const unicodeReady = fontName === 'DejaVuSans';
+  const unicodeReady = false;
 
   for (let idx = 0; idx < questions.length; idx++) {
     const q = questions[idx];
@@ -574,7 +556,7 @@ export async function downloadKartuSoalPdf(
         `KARTU SOAL NOMOR ${q.nomor} (${SHORT_LABEL_JENIS_SOAL[q.type].toUpperCase()})`,
         unicodeReady
       ),
-      105,
+      107.95,
       15,
       { align: 'center' }
     );
@@ -583,7 +565,7 @@ export async function downloadKartuSoalPdf(
     doc.setFont(fontName, 'normal');
     doc.text(
       sanitizePdfText(`${metadata.namaSekolah} - ${metadata.kurikulum}`, unicodeReady),
-      105,
+      107.95,
       21,
       { align: 'center' }
     );
@@ -633,12 +615,12 @@ export async function downloadKartuSoalPdf(
         sanitizePdfText(v, unicodeReady),
       ]),
       columnStyles: {
-        0: { cellWidth: 58, fontStyle: 'bold', fillColor: [248, 250, 252] },
-        1: { cellWidth: 124 },
+        0: { cellWidth: 52, fontStyle: 'bold', fillColor: [248, 250, 252] },
+        1: { cellWidth: 135.9 },
       },
       styles: {
         font: fontName,
-        fontSize: 8.5,
+        fontSize: 10,
         cellPadding: 2.5,
         textColor: [15, 23, 42],
         lineColor: [203, 213, 225],
@@ -807,9 +789,9 @@ export async function downloadKumpulanSoalPdf(
     showTierLabel?: boolean;
   }
 ): Promise<void> {
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [215.9, 330] });
   const fontName = await ensurePdfUnicodeFont(doc);
-  const unicodeReady = fontName === 'DejaVuSans';
+  const unicodeReady = false;
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -1158,7 +1140,7 @@ export function downloadWordDocument(
   <meta charset="utf-8" />
   <title>${documentTitle}</title>
   <style>
-    @page { size: A4; margin: 1.8cm 1.6cm; }
+    @page { size: 215.9mm 330mm; margin: 1.8cm 1.6cm; }
     body { font-family: 'Cambria Math', 'DejaVu Sans', 'Segoe UI', 'Times New Roman', serif; font-size: 11pt; color: #111827; line-height: 1.45; }
     h1, h2, h3 { margin: 0 0 6pt 0; }
     table { border-collapse: collapse; width: 100%; margin-bottom: 12pt; }
