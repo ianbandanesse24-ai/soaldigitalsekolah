@@ -213,11 +213,33 @@ function getFullBabLabel(q: QuestionItem, matchedBab?: BabMateriConfig): string 
 }
 
 function extractSubtopics(scope: string, fallback: string): string[] {
-  const parts = scope
+  const baseParts = scope
     .split(/[,;&/]+|\bdan\b/i)
     .map((p) => p.trim())
     .filter((p) => p.length > 2);
-  return parts.length > 0 ? parts : [fallback];
+  const core = baseParts.length > 0 ? baseParts : [fallback];
+
+  const aspects = [
+    'Konsep Dasar & Definisi',
+    'Sifat & Karakteristik Utama',
+    'Penerapan Kaidah & Rumus',
+    'Analisis Perhitungan Terapan',
+    'Studi Kasus Kontekstual',
+    'Pemodelan Masalah Nyata',
+    'Evaluasi & Validasi Solusi',
+    'Interpretasi Data & Grafik',
+    'Manipulasi Aljabar & Operasi',
+    'Sintesis & Pemecahan Masalah Kompleks'
+  ];
+
+  const expanded: string[] = [];
+  for (const part of core) {
+    for (const asp of aspects) {
+      expanded.push(`${part} (${asp})`);
+    }
+    expanded.push(part);
+  }
+  return expanded;
 }
 
 function isCalculationSubject(subject: string): boolean {
