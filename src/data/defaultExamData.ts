@@ -274,7 +274,7 @@ export function createEmptyQuestion(
     chosenTp,
     true,
     true,
-    indexWithinBab
+    indexWithinBab * 13 + nomor * 17
   );
 }
 
@@ -748,20 +748,20 @@ export const INITIAL_QUESTIONS: QuestionItem[] = redistributeBobotTotal100(
     tingkatanSoal: 'LOTS',
     bobot: 2,
     sumberBuku: 'Matematika Fase E — Kurikulum Deep Learning',
-    rumusanSoal: 'Bentuk sederhana dari (2⁵ × 2³) ÷ 2⁴ adalah ....',
+    rumusanSoal: 'Hasil perhitungan dari 2³ × 2² adalah ....',
     opsiPg: {
-      A: '2²',
-      B: '2⁴',
-      C: '2⁶',
-      D: '2⁸',
-      E: '2¹²',
+      A: '16',
+      B: '32',
+      C: '64',
+      D: '8',
+      E: '4',
     },
     useOptionE: true,
     kunciPg: 'B',
     kunciEsai: '',
     kunciSingkat: '',
     pasanganMenjodohkan: [],
-    pembahasan: 'Berdasarkan sifat eksponen aᵐ × aⁿ ÷ aᵖ = aᵐ⁺ⁿ⁻ᵖ: 2⁵⁺³⁻⁴ = 2⁴ (= 16).',
+    pembahasan: 'Berdasarkan sifat perkalian bilangan berpangkat: 2³ × 2² = 2³⁺² = 2⁵ = 32.',
     catatanTelaah: 'Diterima tanpa revisi.',
   },
   {

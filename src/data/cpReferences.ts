@@ -1355,19 +1355,23 @@ export function buildDefaultTpsForBab(
     ? CP_REGULATIONS.CP_020_2026.short
     : CP_REGULATIONS.CP_046_2025.short;
   const faseLabel = fase === 'Fase E' || fase === 'E' ? 'Fase E' : 'Fase F';
-  const scopeClause = trimmedScope ? ` (lingkup materi ${cleanScope})` : '';
 
+  // Format Tujuan Pembelajaran (TP) yang fleksibel, komunikatif, dan bermakna selaras CP & Kurikulum Merdeka
   const tp1 = isAgama
-    ? `Pada ${displayBab}${scopeClause}, peserta didik mampu memahami, menelaah, dan merefleksikan nilai ajaran mengenai ${firstTopic} sesuai ${regShort} ${faseLabel}.`
-    : `Pada ${displayBab}${scopeClause}, peserta didik mampu memahami dan menjelaskan konsep inti ${firstTopic} dalam mata pelajaran ${mataPelajaran} (${faseLabel} · ${regShort}) secara bermakna.`;
+    ? `Peserta didik mampu memahami, menjelaskan, dan merefleksikan nilai-nilai ajaran pada materi ${firstTopic} (${cleanBab}) dalam kehidupan sehari-hari.`
+    : `Peserta didik dapat memahami dan menjelaskan konsep dasar ${firstTopic} pada materi ${cleanBab} secara tepat dan bermakna.`;
 
-  const tp2 = capaianPembelajaran
-    ? `Melalui pembelajaran ${displayBab} pada lingkup materi ${secondTopic}, peserta didik mampu menerapkan dan menganalisis permasalahan kontekstual untuk mencapai capaian: ${capaianPembelajaran.replace(/\.$/, '')}.`
-    : `Melalui pembelajaran ${displayBab} pada lingkup materi ${secondTopic}, peserta didik mampu menerapkan, menganalisis, dan mengevaluasi pemecahan masalah nyata secara kritis dan kreatif.`;
+  const cleanCpSnippet = capaianPembelajaran
+    ? capaianPembelajaran.replace(/^memahami\s+/i, '').replace(/\.$/, '')
+    : '';
+
+  const tp2 = cleanCpSnippet
+    ? `Peserta didik mampu menerapkan dan menganalisis konsep ${secondTopic} dalam pemecahan masalah kontekstual selaras capaian: ${cleanCpSnippet}.`
+    : `Peserta didik mampu menerapkan konsep ${secondTopic} untuk memecahkan masalah kontekstual pada ${mataPelajaran} (${faseLabel} · ${regShort}).`;
 
   if (subtopics.length >= 3) {
     const thirdTopic = subtopics[2];
-    const tp3 = `Pada ${displayBab} (lingkup materi ${thirdTopic}), peserta didik mampu mengevaluasi dan menyimpulkan keterkaitan antarkonsep ${cleanScope} dalam konteks kehidupan sehari-hari.`;
+    const tp3 = `Peserta didik mampu menganalisis, mengevaluasi, dan menyimpulkan solusi kreatif terkait materi ${thirdTopic} pada ${cleanBab}.`;
     return [tp1, tp2, tp3];
   }
 

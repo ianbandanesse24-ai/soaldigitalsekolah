@@ -520,7 +520,7 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
             tpForQuestion,
             true,
             true,
-            Math.max(0, babQuestionIdx - 1)
+            Math.max(0, babQuestionIdx - 1) * 7 + (q.nomor || 1) * 13
           );
         }
 
@@ -534,7 +534,37 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
             : updatedQ.pembahasan,
         };
       });
-      onSyncAll(nextMeta, nextQuestions);
+
+      // Pastikan tidak ada soal kembar/double dalam rangkaian butir soal
+      const seenSoalStems = new Set<string>();
+      const dedupedQuestions = nextQuestions.map((q, qIdx) => {
+        let stem = (q.rumusanSoal || '').trim();
+        if (!seenSoalStems.has(stem)) {
+          seenSoalStems.add(stem);
+          return q;
+        }
+
+        let adjusted = q;
+        let altOffset = qIdx * 17 + 11;
+        let attempts = 0;
+        while (seenSoalStems.has(stem) && attempts < 8) {
+          attempts++;
+          altOffset += 19;
+          adjusted = generateSmartDraftContentForQuestion(
+            q,
+            nextMeta,
+            q.tujuanPembelajaran || '',
+            true,
+            true,
+            altOffset
+          );
+          stem = (adjusted.rumusanSoal || '').trim();
+        }
+        seenSoalStems.add(stem);
+        return adjusted;
+      });
+
+      onSyncAll(nextMeta, dedupedQuestions);
       return;
     }
 
@@ -571,10 +601,10 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
 
   const handleAddBabTp = (bab: BabMateriConfig) => {
     const currentList = [...getBabTpList(bab)];
-    const cleanScope = bab.lingkupMateri.trim() || bab.namaBab.trim() || 'Materi Pokok';
-    const displayBab = bab.namaBab.trim() || cleanScope;
+    const cleanBab = (bab.namaBab || 'Materi Pokok').replace(/^Bab\s*\d+\s*:\s*/i, '').trim();
+    const cleanScope = bab.lingkupMateri.trim() || cleanBab;
     currentList.push(
-      `Pada ${displayBab} (lingkup materi ${cleanScope}), peserta didik mampu mengevaluasi dan menerapkan konsep tersebut dalam pemecahan masalah nyata.`
+      `Peserta didik mampu menerapkan dan menganalisis materi ${cleanScope} pada ${cleanBab} dalam pemecahan masalah kontekstual secara mendalam.`
     );
     handleUpdateBabItem(bab.id, { tujuanPembelajaranList: currentList });
   };
