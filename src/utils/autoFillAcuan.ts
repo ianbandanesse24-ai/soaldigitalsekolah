@@ -237,13 +237,12 @@ export function generateDefaultTujuanPembelajaran(
     return tpList[Math.max(0, (q.nomor - 1) % tpList.length)];
   }
 
-  const babTitle = cleanBabTitle(q, matchedBab);
   const scope = cleanScopeText(q, matchedBab);
   const tier = resolveTier(q);
 
   if (tier === 'LOTS') {
     return cleanTujuanPembelajaranText(
-      `Peserta didik dapat mengenali dan menjelaskan konsep dasar ${scope} pada materi ${babTitle} dengan bahasa yang jelas.`
+      `Peserta didik dapat mengenali dan menjelaskan konsep dasar ${scope} dengan bahasa yang jelas.`
     );
   }
   if (tier === 'MOTS') {

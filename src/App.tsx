@@ -191,7 +191,12 @@ function loadStateForUser(username: string): ExamProjectState {
         ...(parsed.kartuSoalAcuan?.detectedSampleValues || {}),
       },
       { refreshMetadataFields: true }
-    );
+    ).map((q) => ({
+      ...q,
+      tujuanPembelajaran: q.tujuanPembelajaran
+        ? cleanTujuanPembelajaranText(q.tujuanPembelajaran)
+        : q.tujuanPembelajaran,
+    }));
 
     return {
       ...INITIAL_PROJECT_STATE,

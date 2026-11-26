@@ -1333,6 +1333,23 @@ function splitLingkupSubtopics(lingkupMateri: string, fallback: string): string[
 export function cleanTujuanPembelajaranText(tp: string): string {
   if (!tp || typeof tp !== 'string') return '';
   let cleaned = tp
+    // 0a. Hilangkan kurung "(lingkup materi ...)" atau "(dengan lingkup materi ...)" atau "(Bab ...)" terlebih dahulu
+    .replace(/\s*\(\s*(?:dengan\s+)?lingkup\s+materi[^)]*\)/gi, '')
+    .replace(/\s*\(\s*bab\s*\d*[^)]*\)/gi, '')
+    // 0b. Hilangkan pembuka kalimat yang menyebut Bab / Materi seperti "Pada Bab 1: deret, peserta didik ..."
+    .replace(
+      /^\s*(?:pada|dalam)\s+bab\b[^.!?]*?(?=(?:peserta\s+didik|siswa)\b)/i,
+      ''
+    )
+    .replace(
+      /^\s*(?:pada|dalam)\s+materi\b[^.!?]*?[,.:–-]\s*(?=(?:peserta\s+didik|siswa)\b)/i,
+      ''
+    )
+    .replace(
+      /^\s*(?:pada|dalam)\s+bab\s+\d*(?:\s*:\s*[^,.;!?]+)?\s*[,.;:–-]\s*/i,
+      ''
+    )
+    .replace(/\s*(?:pada|dalam)\s+materi\s+bab\s+\d+[^.,;!?)]*/gi, '')
     // 1. Hilangkan akhiran kurung regulasi seperti (Fase E · CP 046 Tahun 2025), (CP 046 Tahun 2025), (Fase F · CP 020/2026), dsb.
     .replace(/\s*\((?:fase\s+[ef]\s*[·,/|-]\s*)?cp\s*\d+[^)]*\)/gi, '')
     // 2. Hilangkan frasa "... pada mata pelajaran [Nama Mapel] (Fase ...)" atau "... pada [Nama Mapel] (Fase ...)"
@@ -1358,6 +1375,7 @@ export function cleanTujuanPembelajaranText(tp: string): string {
     .replace(/\s*\(\s*fase\s+[ef]\s*\)/gi, '')
     .replace(/\s*\bfase\s+[ef]\b/gi, '')
     // 8. Rapikan spasi dan tanda baca
+    .replace(/^\s*[,.:–-]+\s*/, '')
     .replace(/\s+([.,!?])/g, '$1')
     .replace(/\.+$/g, '.')
     .replace(/\s{2,}/g, ' ')
@@ -1374,6 +1392,11 @@ export function cleanTujuanPembelajaranText(tp: string): string {
     cleaned = cleaned.replace(/\.?$/, '') + ' dengan runtut dan jelas.';
   } else if (!/[.!?]$/.test(cleaned) && cleaned.length > 0) {
     cleaned = `${cleaned}.`;
+  }
+
+  // Pastikan huruf pertama kapital setelah penghapusan awalan "Pada Bab ..."
+  if (cleaned.length > 0) {
+    cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
   }
 
   return cleaned;
@@ -1404,13 +1427,12 @@ export function buildDefaultTpsForBab(
     mataPelajaran
   );
 
-  // Kalimat TP yang luwes, tidak kaku, serta menyesuaikan bertahap dengan kemampuan peserta didik
-  // (Pemahaman Awal -> Penerapan Kontekstual -> Penalaran & Pemecahan Masalah)
+  // Kalimat TP yang luwes, menyesuaikan kemampuan peserta didik, tanpa menyebut nama Bab, Lingkup Materi, maupun kode regulasi
   const tp1 = isAgama
-    ? `Peserta didik dapat mengenal, memahami, dan menceritakan kembali nilai-nilai kebaikan dari materi ${firstTopic} dalam keseharian.`
+    ? `Peserta didik dapat mengenal, memahami, dan menceritakan kembali nilai-nilai kebaikan terkait ${firstTopic} dalam keseharian.`
     : isBahasa
-    ? `Peserta didik dapat mengenali isi pokok, struktur, dan makna teks pada materi ${firstTopic} dengan bahasa yang jelas.`
-    : `Peserta didik dapat mengenali dan menjelaskan konsep dasar ${firstTopic} pada materi ${cleanBab} dengan bahasa sendiri secara runtut.`;
+    ? `Peserta didik dapat mengenali isi pokok, struktur, dan makna teks terkait ${firstTopic} dengan bahasa yang jelas.`
+    : `Peserta didik dapat mengenali dan menjelaskan konsep dasar ${firstTopic} dengan bahasa sendiri secara runtut.`;
 
   const tp2 = isAgama
     ? `Peserta didik mampu membiasakan sikap terpuji dan menerapkan nilai ajaran ${secondTopic} saat berinteraksi dengan sesama.`
