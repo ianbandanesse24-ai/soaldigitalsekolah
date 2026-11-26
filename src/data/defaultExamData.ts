@@ -319,40 +319,168 @@ export function distributeTotalAcrossCheckedTypes(
 
 const TYPE_WEIGHT_FACTOR: Record<QuestionType, number> = {
   PG: 1,
-  JAWABAN_SINGKAT: 2,
-  MENJODOHKAN: 2,
-  ESAY: 4,
+  JAWABAN_SINGKAT: 1.5,
+  MENJODOHKAN: 1.5,
+  ESAY: 2.5,
 };
+
+const COGNITIVE_DIFFICULTY_FACTOR: Record<CognitiveLevel, number> = {
+  C1: 1.0,
+  C2: 1.2,
+  C3: 2.2,
+  C4: 3.5,
+  C5: 3.8,
+  C6: 4.2,
+};
+
+function getQuestionDifficultyRank(q: QuestionItem): number {
+  const tier = q.tingkatanSoal || tierFromCognitiveLevel(q.levelKognitif);
+  const tierBase = tier === 'LOTS' ? 10 : tier === 'MOTS' ? 20 : 30;
+  const cogOffsetMap: Record<CognitiveLevel, number> = {
+    C1: 1,
+    C2: 2,
+    C3: 3,
+    C4: 4,
+    C5: 5,
+    C6: 6,
+  };
+  return tierBase + (cogOffsetMap[q.levelKognitif] || 2);
+}
+
+function getQuestionDifficultyWeight(q: QuestionItem): number {
+  const tier = q.tingkatanSoal || tierFromCognitiveLevel(q.levelKognitif);
+  const tierAlignedLevel =
+    tierFromCognitiveLevel(q.levelKognitif) === tier
+      ? q.levelKognitif
+      : cognitiveLevelForTier(tier);
+  const diffFactor = COGNITIVE_DIFFICULTY_FACTOR[tierAlignedLevel] || 1.2;
+  const typeFactor = TYPE_WEIGHT_FACTOR[q.type] || 1;
+  return diffFactor * typeFactor;
+}
+
+export function isBobotIntegerAndMonotonic(questions: QuestionItem[]): boolean {
+  if (questions.length === 0) return true;
+
+  let sum = 0;
+  for (const q of questions) {
+    const val = Number(q.bobot);
+    if (!Number.isInteger(val)) return false;
+    if (questions.length <= 100 && val < 1) return false;
+    if (val < 0) return false;
+    sum += val;
+  }
+  if (sum !== 100) return false;
+
+  for (let i = 0; i < questions.length; i++) {
+    for (let j = i + 1; j < questions.length; j++) {
+      if (questions[i].type !== questions[j].type) continue;
+      const rankI = getQuestionDifficultyRank(questions[i]);
+      const rankJ = getQuestionDifficultyRank(questions[j]);
+      if (rankI < rankJ && questions[i].bobot > questions[j].bobot) {
+        return false;
+      }
+      if (rankJ < rankI && questions[j].bobot > questions[i].bobot) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
 
 export function redistributeBobotTotal100(
   questions: QuestionItem[]
 ): QuestionItem[] {
-  if (questions.length === 0) return [];
+  const n = questions.length;
+  if (n === 0) return [];
+  if (n === 1) {
+    return [{ ...questions[0], bobot: 100 }];
+  }
 
-  const totalRaw = questions.reduce(
-    (sum, q) => sum + (TYPE_WEIGHT_FACTOR[q.type] || 1),
-    0
+  const rawWeights = questions.map((q) => getQuestionDifficultyWeight(q));
+  const diffRanks = questions.map((q) => getQuestionDifficultyRank(q));
+  const totalRaw = rawWeights.reduce((sum, w) => sum + w, 0) || n;
+  const minPerQuestion = n <= 100 ? 1 : 0;
+
+  const exactShares = rawWeights.map((w) => (w / totalRaw) * 100);
+  const bobots = exactShares.map((exact) =>
+    Math.max(minPerQuestion, Math.floor(exact))
   );
 
-  const rawBobots = questions.map((q) => {
-    const w = TYPE_WEIGHT_FACTOR[q.type] || 1;
-    return Math.round(((w / totalRaw) * 100) * 100) / 100;
-  });
+  let currentSum = bobots.reduce((sum, val) => sum + val, 0);
 
-  const currentSum = rawBobots.reduce((sum, val) => sum + val, 0);
-  const residual = Math.round((100 - currentSum) * 100) / 100;
+  // Jika karena batas minimum bobot=1 jumlah melebihi 100, kurangi dari tingkat kesulitan terendah
+  if (currentSum > 100) {
+    const indicesLowFirst = bobots
+      .map((_, idx) => idx)
+      .sort((a, b) => {
+        if (diffRanks[a] !== diffRanks[b]) return diffRanks[a] - diffRanks[b];
+        return rawWeights[a] - rawWeights[b];
+      });
+    let guard = 0;
+    while (currentSum > 100 && guard < 1000) {
+      let reduced = false;
+      for (const idx of indicesLowFirst) {
+        if (bobots[idx] > minPerQuestion && currentSum > 100) {
+          bobots[idx]--;
+          currentSum--;
+          reduced = true;
+        }
+      }
+      if (!reduced) break;
+      guard++;
+    }
+  }
 
-  if (rawBobots.length > 0 && residual !== 0) {
-    const lastIdx = rawBobots.length - 1;
-    rawBobots[lastIdx] = Math.max(
-      0.01,
-      Math.round((rawBobots[lastIdx] + residual) * 100) / 100
-    );
+  // Jika jumlah kurang dari 100, bagikan sisa satuan menggunakan Largest Remainder Method
+  // dengan prioritas kesulitan lebih tinggi pada sisa yang berdekatan
+  if (currentSum < 100) {
+    const indicesByRemainder = bobots
+      .map((_, idx) => idx)
+      .sort((a, b) => {
+        const remA = exactShares[a] - Math.floor(exactShares[a]);
+        const remB = exactShares[b] - Math.floor(exactShares[b]);
+        if (Math.abs(remB - remA) > 1e-6) return remB - remA;
+        if (diffRanks[b] !== diffRanks[a]) return diffRanks[b] - diffRanks[a];
+        return rawWeights[b] - rawWeights[a];
+      });
+    let pointer = 0;
+    while (currentSum < 100) {
+      const targetIdx = indicesByRemainder[pointer % indicesByRemainder.length];
+      bobots[targetIdx]++;
+      currentSum++;
+      pointer++;
+    }
+  }
+
+  // Pastikan aturan monotonik: dalam jenis soal yang sama, soal lebih sulit tidak pernah
+  // memiliki bobot satuan lebih kecil daripada soal yang lebih mudah
+  let swapped = true;
+  let passCount = 0;
+  while (swapped && passCount < n * n) {
+    swapped = false;
+    passCount++;
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        if (questions[i].type !== questions[j].type) continue;
+        if (diffRanks[i] < diffRanks[j] && bobots[i] > bobots[j]) {
+          const tmp = bobots[i];
+          bobots[i] = bobots[j];
+          bobots[j] = tmp;
+          swapped = true;
+        } else if (diffRanks[j] < diffRanks[i] && bobots[j] > bobots[i]) {
+          const tmp = bobots[i];
+          bobots[i] = bobots[j];
+          bobots[j] = tmp;
+          swapped = true;
+        }
+      }
+    }
   }
 
   return questions.map((q, idx) => ({
     ...q,
-    bobot: rawBobots[idx],
+    bobot: Math.round(bobots[idx]),
   }));
 }
 

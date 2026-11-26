@@ -2388,9 +2388,19 @@ export function generateSmartDraftContentForQuestion(
     q.type === 'ESAY' &&
     (isPlaceholderKunciEsai(q.kunciEsai) || forceReplaceAutoDraft || q.isAutoDraft === true)
   ) {
-    const s1 = Math.max(1, Math.round(q.bobot * 0.25 * 100) / 100);
-    const s2 = Math.max(1, Math.round(q.bobot * 0.45 * 100) / 100);
-    const s3 = Math.max(0.5, Math.round((q.bobot - s1 - s2) * 100) / 100);
+    const totalBobot = Math.max(1, Math.round(Number(q.bobot) || 1));
+    let s1 = 1;
+    let s2 = 0;
+    let s3 = 0;
+    if (totalBobot >= 3) {
+      s1 = Math.max(1, Math.floor(totalBobot * 0.25));
+      s2 = Math.max(1, Math.floor(totalBobot * 0.45));
+      s3 = Math.max(1, totalBobot - s1 - s2);
+    } else if (totalBobot === 2) {
+      s1 = 1;
+      s2 = 1;
+      s3 = 0;
+    }
     const steps = blueprint.kunciEsaiSteps || [
       `Identifikasi konsep dan data utama pada ${subtopic} (${babFull})`,
       `Langkah analisis dan penyelesaian sistematis`,
@@ -2400,7 +2410,7 @@ export function generateSmartDraftContentForQuestion(
       `1. ${steps[0]} — Skor ${s1}.`,
       `2. ${steps[1]} — Skor ${s2}.`,
       `3. ${steps[2]} — Skor ${s3}.`,
-      `Total Skor Maksimal = ${q.bobot}.`,
+      `Total Skor Maksimal = ${totalBobot}.`,
     ].join('\n');
   }
 

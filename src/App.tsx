@@ -26,6 +26,7 @@ import {
   assignTingkatanSoal,
   DEFAULT_TINGKATAN_PERSENTASE,
   INITIAL_PROJECT_STATE,
+  isBobotIntegerAndMonotonic,
   KURIKULUM_TETAP,
   redistributeBobotTotal100,
   tierFromCognitiveLevel,
@@ -60,11 +61,9 @@ function getStorageKey(username: string): string {
 }
 
 function ensureTotalBobot100(questions: QuestionItem[]): QuestionItem[] {
-  const sum =
-    Math.round(
-      questions.reduce((acc, q) => acc + (Number(q.bobot) || 0), 0) * 100
-    ) / 100;
-  return sum === 100 ? questions : redistributeBobotTotal100(questions);
+  return isBobotIntegerAndMonotonic(questions)
+    ? questions
+    : redistributeBobotTotal100(questions);
 }
 
 function normalizeQuestions(

@@ -1939,7 +1939,7 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
             <div className="text-xs text-slate-600">
               <span>
-                Bobot skor per butir dihitung otomatis agar total seluruh soal tepat{' '}
+                Bobot skor per butir dihitung otomatis dalam bilangan bulat satuan (tanpa desimal) sesuai tingkat kesulitan sehingga total seluruh soal tepat{' '}
                 <strong className="font-mono text-slate-900">100</strong>
               </span>
               <span className="mx-1.5 text-slate-300" aria-hidden="true">
@@ -1981,7 +1981,7 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
                 </span>
               </div>
               <p className="mt-0.5 text-xs text-slate-500">
-                Pembagian bobot skor otomatis untuk {questions.length} butir soal aktif.
+                Pembagian bobot satuan (non-desimal) untuk {questions.length} butir soal aktif — semakin sulit soal, semakin tinggi bobotnya.
               </p>
             </div>
             <span className="font-mono text-sm font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 tabular-nums shadow-2xs">
@@ -1995,7 +1995,7 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
                 <tr className="border-b border-slate-200 bg-gradient-to-r from-amber-50/80 to-slate-50 text-slate-800">
                   <th className="px-3.5 py-2.5 text-left font-bold">Jenis Soal</th>
                   <th className="px-3.5 py-2.5 text-right font-bold">Jumlah Butir</th>
-                  <th className="px-3.5 py-2.5 text-right font-bold">Bobot Rata-Rata</th>
+                  <th className="px-3.5 py-2.5 text-right font-bold">Bobot Satuan / Butir</th>
                   <th className="px-3.5 py-2.5 text-right font-bold">Subtotal Bobot</th>
                 </tr>
               </thead>
@@ -2003,11 +2003,14 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
                 {QUESTION_TYPES.map((t) => {
                   const items = questions.filter((q) => q.type === t);
                   if (items.length === 0) return null;
-                  const subtotal =
-                    Math.round(
-                      items.reduce((s, q) => s + (Number(q.bobot) || 0), 0) * 100
-                    ) / 100;
-                  const avg = Math.round((subtotal / items.length) * 100) / 100;
+                  const bobots = items.map((q) => Math.round(Number(q.bobot) || 0));
+                  const subtotal = bobots.reduce((s, val) => s + val, 0);
+                  const minBobot = Math.min(...bobots);
+                  const maxBobot = Math.max(...bobots);
+                  const bobotLabel =
+                    minBobot === maxBobot
+                      ? String(minBobot)
+                      : `${minBobot}–${maxBobot}`;
                   return (
                     <tr key={t} className="hover:bg-amber-50/20 transition-colors">
                       <td className="px-3.5 py-2.5 font-semibold text-slate-900 flex items-center gap-2">
@@ -2018,7 +2021,7 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
                         {items.length}
                       </td>
                       <td className="px-3.5 py-2.5 text-right font-mono text-slate-700 tabular-nums">
-                        {avg}
+                        {bobotLabel}
                       </td>
                       <td className="px-3.5 py-2.5 text-right font-mono font-bold text-slate-900 tabular-nums">
                         {subtotal}
@@ -2066,7 +2069,7 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
                 <tr className="border-b border-slate-200 bg-gradient-to-r from-violet-50/80 to-slate-50 text-slate-800">
                   <th className="px-3.5 py-2.5 text-left font-bold">Tingkatan</th>
                   <th className="px-3.5 py-2.5 text-right font-bold">Target</th>
-                  <th className="px-3.5 py-2.5 text-left font-bold">Nomor Soal</th>
+                  <th className="px-3.5 py-2.5 text-left font-bold">Nomor Soal (Bobot)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -2076,6 +2079,10 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
                       (q.tingkatanSoal || tierFromCognitiveLevel(q.levelKognitif)) ===
                       tier
                   );
+                  const tierSubtotal = matched.reduce(
+                    (sum, m) => sum + Math.round(Number(m.bobot) || 0),
+                    0
+                  );
                   const tierColors: Record<QuestionTier, { badge: string; text: string }> = {
                     LOTS: { badge: 'bg-emerald-100 text-emerald-800 border-emerald-200', text: 'text-emerald-700' },
                     MOTS: { badge: 'bg-amber-100 text-amber-800 border-amber-200', text: 'text-amber-700' },
@@ -2084,9 +2091,14 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
                   return (
                     <tr key={tier} className="hover:bg-violet-50/20 transition-colors">
                       <td className="px-3.5 py-2.5 font-bold">
-                        <span className={`inline-block px-2 py-0.5 rounded-md font-mono text-[11px] font-bold border ${tierColors[tier].badge}`}>
-                          {tier}
-                        </span>
+                        <div className="flex flex-col gap-1">
+                          <span className={`inline-block w-fit px-2 py-0.5 rounded-md font-mono text-[11px] font-bold border ${tierColors[tier].badge}`}>
+                            {tier}
+                          </span>
+                          <span className="font-mono text-[10px] font-semibold text-slate-500">
+                            Subtotal: {tierSubtotal}
+                          </span>
+                        </div>
                       </td>
                       <td className="px-3.5 py-2.5 text-right font-mono font-semibold text-slate-700 tabular-nums">
                         {tingkatanPersentase[tier]}% ({matched.length})
@@ -2095,8 +2107,8 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
                         {matched.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
                             {matched.map((m) => (
-                              <span key={m.id} className="px-1.5 py-0.2 bg-slate-100 rounded text-[11px] font-semibold text-slate-700">
-                                #{m.nomor}
+                              <span key={m.id} className="px-1.5 py-0.5 bg-slate-100 rounded text-[11px] font-semibold text-slate-700">
+                                #{m.nomor} ({m.bobot})
                               </span>
                             ))}
                           </div>

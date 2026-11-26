@@ -147,8 +147,12 @@ export const KisiKisiView: React.FC<KisiKisiViewProps> = ({
       }
       return merged;
     });
+    const shouldRedistributeBobot =
+      patch.type !== undefined ||
+      patch.tingkatanSoal !== undefined ||
+      patch.levelKognitif !== undefined;
     onUpdateQuestions(
-      patch.type !== undefined ? redistributeBobotTotal100(updated) : updated
+      shouldRedistributeBobot ? redistributeBobotTotal100(updated) : updated
     );
   };
 
