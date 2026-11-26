@@ -436,6 +436,12 @@ export const KumpulanSoalView: React.FC<KumpulanSoalViewProps> = ({
 
             {showAnswerKey && (
               <div className="no-print mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
+                <div className="mb-1 flex flex-wrap items-center justify-between gap-2 text-[11px] font-medium text-indigo-700">
+                  <span>Materi: {q.materi || q.namaBab || '-'}</span>
+                  <span className="font-mono text-[10px] text-slate-500">
+                    {q.tingkatanSoal || 'MOTS'} · {q.levelKognitif}
+                  </span>
+                </div>
                 <span className="font-semibold text-emerald-800 whitespace-pre-line">
                   Kunci:{' '}
                   {resolveQuestionFieldValue(q, metadata, {

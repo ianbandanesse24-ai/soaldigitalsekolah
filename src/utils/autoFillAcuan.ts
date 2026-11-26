@@ -95,7 +95,43 @@ export function isPlaceholderRumusan(text?: string): boolean {
     /^Evaluasi terhadap pengaruh dan implementasi nyata dari .* dalam .* menunjukkan/i.test(t) ||
     /^Sebutkan istilah utama atau besaran baku yang menjadi fokus kajian pada lingkup materi /i.test(t) ||
     /^Pasangkanlah konsep atau istilah pada materi .* \(kolom kiri\)/i.test(t) ||
-    /^Dalam mempelajari materi .* nilai akhlak mulia dan perilaku terpuji/i.test(t)
+    /^Dalam mempelajari materi .* nilai akhlak mulia dan perilaku terpuji/i.test(t) ||
+    /^Bentuk sederhana dari \(2[⁵5\^]+\s*[×x*]\s*2[³3\^]+\)\s*[÷/]\s*2[⁴4\^]+/i.test(t) ||
+    /^Dina membeli 2 buku tulis, 1 pena, dan 3 penghapus/i.test(t) ||
+    /^Koordinat titik balik \(titik puncak\) dari grafik fungsi kuadrat f\(x\)/i.test(t) ||
+    /^Diketahui barisan aritmetika dengan suku pertama 4 dan beda 3/i.test(t) ||
+    /^Hasil dari ²log 8 \+ ²log 4 adalah/i.test(t) ||
+    /^Median dari data nilai: 70, 85, 65, 90, 75, 80, 75/i.test(t) ||
+    /^Jodohkan perbandingan trigonometri sudut istimewa/i.test(t) ||
+    /^Pasangkan nama konsep di sebelah kiri dengan rumus bakunya/i.test(t) ||
+    /^Suatu koloni bakteri awalnya berjumlah 50 sel/i.test(t) ||
+    /^Sebuah peralatan laboratorium dibeli seharga Rp16\.000\.000/i.test(t) ||
+    /^Nilai dari ²log 8 \+ ²log 4 − ²log 2/i.test(t) ||
+    /^Suatu koloni bakteri membelah diri menjadi dua setiap 30 menit/i.test(t) ||
+    /^Rumus suku ke-n \(Uₙ\) pada barisan aritmetika/i.test(t) ||
+    /^Diketahui barisan aritmetika dengan suku pertama a = 5/i.test(t) ||
+    /^Suatu gedung bioskop memiliki 15 baris kursi/i.test(t) ||
+    /^Perhatikan fenomena berikut: "Wilayah Jakarta/i.test(t) ||
+    /^Pusat perbelanjaan \(mal\) cenderung mengelompok/i.test(t) ||
+    /^Kawasan dataran rendah dimanfaatkan penduduk/i.test(t) ||
+    /^Inti masalah ekonomi yang dihadapi manusia/i.test(t) ||
+    /^Apabila harga daging ayam naik/i.test(t) ||
+    /^Kebijakan bank sentral dengan menaikkan suku bunga/i.test(t) ||
+    /^Besaran turunan dalam sistem SI yang memiliki satuan/i.test(t) ||
+    /^Sebuah mobil bermassa 1\.000 kg bergerak/i.test(t) ||
+    /^Sebuah bola dilempar vertikal ke atas/i.test(t) ||
+    /^Partikel subatom penyusun inti atom/i.test(t) ||
+    /^Massa molekul relatif \(M_r\) dari senyawa glukosa/i.test(t) ||
+    /^Sebanyak 4 gram NaOH/i.test(t) ||
+    /^Organel sel tumbuhan yang berfungsi sebagai tempat/i.test(t) ||
+    /^Perbedaan utama antara struktur sel prokariotik/i.test(t) ||
+    /^Apabila tumbuhan dilarutkan dalam larutan hipertonik/i.test(t) ||
+    /^Hasil operasi atau konsep inti dari .* pada materi /i.test(t) ||
+    /^Pada materi .*, pernyataan yang paling tepat mengenai /i.test(t) ||
+    /^Dalam pembelajaran .*, penerapan konsep /i.test(t) ||
+    /^Berdasarkan kajian .* pada .*, simpulan atau analisis/i.test(t) ||
+    /^Tuliskan konsep inti, istilah baku, atau jawaban singkat yang tepat terkait /i.test(t) ||
+    /^Uraikan secara runtut konsep .* dalam materi /i.test(t)
   );
 }
 
@@ -354,35 +390,70 @@ function stripOuterQuotesAndPunct(str: string): string {
   return str.replace(/\s+/g, ' ').trim().replace(/[.!?]+$/, '');
 }
 
-function getFlexibleRumusan(domain: SubjectDomain, tier: QuestionTier, cleanBab: string, cleanSub: string, subject: string): string {
+function getFlexibleRumusan(
+  domain: SubjectDomain,
+  tier: QuestionTier,
+  cleanBab: string,
+  cleanSub: string,
+  variantIdx = 0
+): string {
+  const v = variantIdx % 2;
   if (domain === 'MATEMATIKA') {
-    if (tier === 'LOTS') return `Tentukan hasil operasi atau bentuk sederhana dari ${cleanSub} pada materi ${cleanBab} adalah ....`;
-    if (tier === 'MOTS') return `Diketahui suatu bentuk fungsi atau relasi terkait ${cleanSub} dalam ${cleanBab}. Nilai atau hasil penyelesaian yang tepat adalah ....`;
-    return `Dalam analisis kasus terapan ${cleanSub} (${cleanBab}), langkah pemecahan masalah matematis yang paling konsisten menghasilkan solusi benar adalah ....`;
+    if (tier === 'LOTS') {
+      return v === 0
+        ? `Pada materi ${cleanBab}, pernyataan atau sifat dasar yang paling tepat mengenai ${cleanSub} adalah ....`
+        : `Hasil operasi atau konsep inti dari ${cleanSub} pada materi ${cleanBab} yang bernilai benar adalah ....`;
+    }
+    if (tier === 'MOTS') {
+      return v === 0
+        ? `Diketahui suatu permasalahan yang melibatkan ${cleanSub} dalam materi ${cleanBab}. Langkah penyelesaian yang paling tepat adalah ....`
+        : `Dalam pembelajaran ${cleanBab}, penerapan konsep ${cleanSub} untuk menyelesaikan soal berikut menghasilkan ....`;
+    }
+    return `Berdasarkan kajian ${cleanSub} pada ${cleanBab}, simpulan atau strategi pemecahan masalah matematis yang paling konsisten adalah ....`;
   }
   if (domain === 'BAHASA') {
-    if (tier === 'LOTS') return `Unsur kebahasaan, struktur teks, atau informasi tersurat yang menjadi ciri utama dari ${cleanSub} pada ${cleanBab} adalah ....`;
-    if (tier === 'MOTS') return `Cermati kutipan teks atau kalimat dalam ${cleanBab} mengenai ${cleanSub}. Makna tersirat atau fungsi komunikatif kalimat tersebut adalah ....`;
-    return `Analisis kritis terhadap kohesi, koherensi, dan efektivitas struktur kalimat pada ${cleanSub} (${cleanBab}) menunjukkan bahwa ....`;
+    if (tier === 'LOTS') {
+      return `Unsur kebahasaan, struktur teks, atau ciri utama dari ${cleanSub} dalam materi ${cleanBab} adalah ....`;
+    }
+    if (tier === 'MOTS') {
+      return `Cermati konteks wacana pada ${cleanBab} mengenai ${cleanSub}. Makna atau fungsi komunikatif yang paling tepat adalah ....`;
+    }
+    return `Berdasarkan kajian ${cleanSub} pada ${cleanBab}, simpulan atau evaluasi efektivitas struktur bahasa yang paling tepat adalah ....`;
   }
   if (domain === 'SOSIAL_PPKN' || domain === 'AGAMA') {
-    if (tier === 'LOTS') return `Faktor utama atau latar belakang konseptual yang menandai munculnya ${cleanSub} dalam ${cleanBab} adalah ....`;
-    if (tier === 'MOTS') return `Dampak atau dinamika penerapan nilai yang timbul akibat ${cleanSub} pada ${cleanBab} dapat dianalisis sebagai bentuk ....`;
-    return `Evaluasi kritis terhadap fenomena ${cleanSub} dalam ${cleanBab} menunjukkan keterkaitan langsung dengan proses ....`;
+    if (tier === 'LOTS') {
+      return `Nilai dasar atau konsep utama yang menandai kajian ${cleanSub} dalam materi ${cleanBab} adalah ....`;
+    }
+    if (tier === 'MOTS') {
+      return `Dalam pembelajaran ${cleanBab}, penerapan konsep ${cleanSub} dalam kehidupan bermasyarakat tampak pada ....`;
+    }
+    return `Berdasarkan kajian ${cleanSub} pada ${cleanBab}, simpulan atau analisis kritis yang paling relevan adalah ....`;
   }
   if (domain === 'EKONOMI') {
-    if (tier === 'LOTS') return `Prinsip dasar atau karakteristik utama yang mendasari pengelolaan ${cleanSub} pada ${cleanBab} adalah ....`;
-    if (tier === 'MOTS') return `Dalam analisis pengelolaan usaha atau pasar terkait ${cleanSub} (${cleanBab}), efisiensi optimal tercapai apabila ....`;
-    return `Strategi pengambilan keputusan manajerial dalam mengatasi risiko ketidakpastian pada ${cleanSub} (${cleanBab}) yang paling tepat adalah ....`;
+    if (tier === 'LOTS') {
+      return `Prinsip dasar atau karakteristik utama dari ${cleanSub} pada materi ${cleanBab} adalah ....`;
+    }
+    if (tier === 'MOTS') {
+      return `Dalam pembelajaran ${cleanBab}, penerapan konsep ${cleanSub} yang paling tepat untuk menjaga keseimbangan ekonomi adalah ....`;
+    }
+    return `Berdasarkan kajian ${cleanSub} pada ${cleanBab}, analisis keputusan ekonomi yang paling rasional adalah ....`;
   }
   if (domain === 'INFORMATIKA') {
-    if (tier === 'LOTS') return `Komponen atau struktur data dasar yang digunakan dalam pemecahan masalah ${cleanSub} pada ${cleanBab} adalah ....`;
-    if (tier === 'MOTS') return `Penerapan algoritma atau logika pemrograman yang efisien untuk menyelesaikan kasus ${cleanSub} (${cleanBab}) adalah ....`;
-    return `Perancangan sistem atau optimasi komputasi pada ${cleanSub} dalam ${cleanBab} memerlukan pertimbangan utama berupa ....`;
+    if (tier === 'LOTS') {
+      return `Komponen atau konsep dasar yang digunakan pada kajian ${cleanSub} dalam materi ${cleanBab} adalah ....`;
+    }
+    if (tier === 'MOTS') {
+      return `Dalam pembelajaran ${cleanBab}, penerapan konsep ${cleanSub} yang efisien untuk menyelesaikan permasalahan komputasi adalah ....`;
+    }
+    return `Berdasarkan kajian ${cleanSub} pada ${cleanBab}, simpulan perancangan sistem atau optimasi algoritma yang paling tepat adalah ....`;
   }
-  if (tier === 'LOTS') return `Prinsip fundamental atau konsep esensial yang mendasari kajian ${cleanSub} pada ${cleanBab} adalah ....`;
-  if (tier === 'MOTS') return `Penerapan prosedur atau hukum analisis ${cleanSub} (${cleanBab}) secara efektif bertujuan untuk ....`;
-  return `Evaluasi terhadap pengaruh dan implementasi nyata dari ${cleanSub} dalam ${cleanBab} menunjukkan bahwa ....`;
+  if (tier === 'LOTS') {
+    return `Pada materi ${cleanBab}, prinsip fundamental atau konsep esensial dari ${cleanSub} adalah ....`;
+  }
+  if (tier === 'MOTS') {
+    return `Dalam pembelajaran ${cleanBab}, penerapan konsep ${cleanSub} secara tepat bertujuan untuk ....`;
+  }
+  return `Berdasarkan kajian ${cleanSub} pada ${cleanBab}, simpulan atau analisis ilmiah yang paling tepat adalah ....`;
 }
 
 function buildDomainQuestionBlueprint(params: {
@@ -402,7 +473,6 @@ function buildDomainQuestionBlueprint(params: {
   const {
     domain,
     subject,
-    kelas,
     babTitle,
     scope,
     subtopic,
@@ -416,39 +486,155 @@ function buildDomainQuestionBlueprint(params: {
   const cleanAlt = stripOuterQuotesAndPunct(altSubtopic);
   const cleanBab = stripOuterQuotesAndPunct(babTitle);
   const topicText = `${babTitle} ${scope}`.toLowerCase();
+  const subLower = cleanSub.toLowerCase();
+  const focusText = `${subLower} ${topicText}`;
+  const v = variantIdx % 2;
 
   // 1. PILIHAN GANDA (PG)
   if (type === 'PG') {
     if (domain === 'MATEMATIKA') {
-      if (topicText.includes('eksponen') || topicText.includes('pangkat') || topicText.includes('logaritma')) {
+      const hasExplicitOtherSubtopic =
+        subLower.includes('logaritma') ||
+        subLower.includes('akar') ||
+        subLower.includes('pertumbuhan') ||
+        subLower.includes('peluruhan') ||
+        subLower.includes('barisan') ||
+        subLower.includes('deret') ||
+        subLower.includes('trigonometri') ||
+        subLower.includes('sudut') ||
+        subLower.includes('kuadrat') ||
+        subLower.includes('spltv') ||
+        subLower.includes('komposisi') ||
+        subLower.includes('invers') ||
+        subLower.includes('statistika') ||
+        subLower.includes('peluang') ||
+        subLower.includes('kombinasi') ||
+        subLower.includes('permutasi') ||
+        subLower.includes('regresi') ||
+        subLower.includes('median') ||
+        subLower.includes('matriks') ||
+        subLower.includes('determinan') ||
+        subLower.includes('vektor') ||
+        subLower.includes('lingkaran') ||
+        subLower.includes('limit') ||
+        subLower.includes('turunan') ||
+        subLower.includes('diferensial') ||
+        subLower.includes('integral') ||
+        subLower.includes('polinomial') ||
+        subLower.includes('suku banyak') ||
+        subLower.includes('transformasi') ||
+        subLower.includes('program linear');
+
+      if (
+        subLower.includes('logaritma') ||
+        (!hasExplicitOtherSubtopic &&
+          !subLower.includes('eksponen') &&
+          !subLower.includes('pangkat') &&
+          topicText.includes('logaritma') &&
+          variantIdx % 2 === 1)
+      ) {
         if (tier === 'LOTS') {
           return {
-            rumusan: `Bentuk sederhana dari (2⁵ × 2³) ÷ 2⁴ pada materi ${cleanSub} adalah ....`,
-            correctOption: '2⁴ = 16',
-            distractors: ['2² = 4', '2⁶ = 64', '2⁸ = 256', '2¹² = 4.096'],
-            pembahasanHint: 'Gunakan sifat eksponen aᵐ × aⁿ = aᵐ⁺ⁿ dan aᵐ ÷ aⁿ = aᵐ⁻ⁿ sehingga 2⁵⁺³⁻⁴ = 2⁴ = 16.',
+            rumusan: `Nilai dari ²log 16 pada materi ${cleanBab} (${cleanSub}) adalah ....`,
+            correctOption: '4',
+            distractors: ['2', '3', '8', '16'],
+            pembahasanHint: 'Karena 2⁴ = 16, maka ²log 16 = 4.',
           };
         }
         if (tier === 'MOTS') {
           return {
-            rumusan: `Nilai dari ²log 8 + ²log 4 − ²log 2 pada kajian ${cleanSub} adalah ....`,
+            rumusan: `Nilai dari ²log 8 + ²log 4 − ²log 2 pada materi ${cleanBab} (${cleanSub}) adalah ....`,
             correctOption: '4',
             distractors: ['2', '3', '5', '6'],
             pembahasanHint: 'Sifat logaritma: ²log(8 × 4 ÷ 2) = ²log 16 = 4.',
           };
         }
         return {
-          rumusan: `Suatu koloni bakteri membelah diri menjadi dua setiap 30 menit. Jika jumlah mula-mula 100 sel, jumlah bakteri setelah 2,5 jam adalah ....`,
+          rumusan: `Jika ³log 5 = p dan ³log 2 = q, nilai ³log 50 pada kajian ${cleanSub} (${cleanBab}) adalah ....`,
+          correctOption: '2p + q',
+          distractors: ['p + 2q', 'p² + q', '2p − q', 'p · q'],
+          pembahasanHint: '³log 50 = ³log(25 × 2) = ³log 5² + ³log 2 = 2(³log 5) + ³log 2 = 2p + q.',
+        };
+      }
+
+      if (subLower.includes('bentuk akar') || (subLower.includes('akar') && !subLower.includes('kuadrat'))) {
+        return {
+          rumusan:
+            tier === 'LOTS'
+              ? `Bentuk sederhana dari √48 + √12 − √27 pada kajian ${cleanSub} (${cleanBab}) adalah ....`
+              : `Bentuk rasional dari pecahan 6 / (√5 − √2) pada materi ${cleanSub} (${cleanBab}) adalah ....`,
+          correctOption: tier === 'LOTS' ? '3√3' : '2(√5 + √2)',
+          distractors:
+            tier === 'LOTS'
+              ? ['2√3', '4√3', '5√3', '6√3']
+              : ['2(√5 − √2)', '3(√5 + √2)', '√5 + √2', '6(√5 + √2)'],
+          pembahasanHint:
+            tier === 'LOTS'
+              ? '√48 + √12 − √27 = 4√3 + 2√3 − 3√3 = 3√3.'
+              : 'Kalikan dengan sekawan (√5 + √2)/(√5 + √2): 6(√5 + √2)/(5 − 2) = 2(√5 + √2).',
+        };
+      }
+
+      if (subLower.includes('pertumbuhan') || subLower.includes('peluruhan') || subLower.includes('bunga')) {
+        return {
+          rumusan:
+            tier === 'LOTS'
+              ? `Pada materi ${cleanSub} (${cleanBab}), suatu koloni bakteri awalnya 100 sel dan membelah diri menjadi dua setiap 30 menit. Jumlah bakteri setelah 2 jam adalah ....`
+              : `Sebuah mesin produksi dibeli seharga Rp20.000.000 dan mengalami penyusutan 20% per tahun pada kajian ${cleanSub} (${cleanBab}). Nilai mesin setelah 2 tahun adalah ....`,
+          correctOption: tier === 'LOTS' ? '1.600 sel' : 'Rp12.800.000',
+          distractors:
+            tier === 'LOTS'
+              ? ['400 sel', '800 sel', '2.400 sel', '3.200 sel']
+              : ['Rp10.000.000', 'Rp12.000.000', 'Rp14.400.000', 'Rp16.000.000'],
+          pembahasanHint:
+            tier === 'LOTS'
+              ? 'Selama 2 jam terjadi n = 120 ÷ 30 = 4 kali pembelahan, sehingga 100 × 2⁴ = 1.600 sel.'
+              : 'M₂ = 20.000.000 × (1 − 0,2)² = 20.000.000 × 0,64 = Rp12.800.000.',
+        };
+      }
+
+      if (
+        subLower.includes('eksponen') ||
+        subLower.includes('pangkat') ||
+        (!hasExplicitOtherSubtopic && (focusText.includes('eksponen') || focusText.includes('pangkat')))
+      ) {
+        if (tier === 'LOTS') {
+          return {
+            rumusan:
+              v === 0
+                ? `Bentuk sederhana dari (2⁵ × 2³) ÷ 2⁴ pada materi ${cleanSub} (${cleanBab}) adalah ....`
+                : `Nilai dari (3² × 3⁴) ÷ 3³ pada materi ${cleanSub} (${cleanBab}) adalah ....`,
+            correctOption: v === 0 ? '2⁴ = 16' : '27',
+            distractors:
+              v === 0
+                ? ['2² = 4', '2⁶ = 64', '2⁸ = 256', '2¹² = 4.096']
+                : ['9', '18', '81', '243'],
+            pembahasanHint:
+              v === 0
+                ? 'Gunakan sifat eksponen aᵐ × aⁿ ÷ aᵖ = aᵐ⁺ⁿ⁻ᵖ sehingga 2⁵⁺³⁻⁴ = 2⁴ = 16.'
+                : '3²⁺⁴⁻³ = 3³ = 27.',
+          };
+        }
+        if (tier === 'MOTS') {
+          return {
+            rumusan: `Jika 3²ˣ⁻¹ = 27 pada materi ${cleanSub} (${cleanBab}), nilai x yang memenuhi adalah ....`,
+            correctOption: '2',
+            distractors: ['1', '3', '4', '−1'],
+            pembahasanHint: '3²ˣ⁻¹ = 3³ → 2x − 1 = 3 → 2x = 4 → x = 2.',
+          };
+        }
+        return {
+          rumusan: `Pada kajian ${cleanSub} (${cleanBab}), suatu koloni bakteri membelah diri menjadi dua setiap 30 menit. Jika jumlah mula-mula 100 sel, jumlah bakteri setelah 2,5 jam adalah ....`,
           correctOption: '3.200 sel',
           distractors: ['800 sel', '1.600 sel', '2.400 sel', '6.400 sel'],
           pembahasanHint: 'Banyak pembelahan n = 150 ÷ 30 = 5. N = 100 × 2⁵ = 3.200 sel.',
         };
       }
 
-      if (topicText.includes('barisan') || topicText.includes('deret')) {
+      if (focusText.includes('barisan') || focusText.includes('deret')) {
         if (tier === 'LOTS') {
           return {
-            rumusan: `Rumus suku ke-n (Uₙ) pada barisan aritmetika dengan suku pertama a dan beda b adalah ....`,
+            rumusan: `Rumus suku ke-n (Uₙ) pada barisan aritmetika dengan suku pertama a dan beda b (${cleanSub}) adalah ....`,
             correctOption: 'Uₙ = a + (n − 1)b',
             distractors: ['Uₙ = a + n·b', 'Uₙ = a · rⁿ⁻¹', 'Uₙ = ½n(a + b)', 'Uₙ = a − (n − 1)b'],
             pembahasanHint: 'Rumus baku suku ke-n barisan aritmetika adalah Uₙ = a + (n − 1)b.',
@@ -456,38 +642,192 @@ function buildDomainQuestionBlueprint(params: {
         }
         if (tier === 'MOTS') {
           return {
-            rumusan: `Diketahui barisan aritmetika dengan suku pertama a = 5 dan beda b = 4. Nilai suku ke-12 adalah ....`,
+            rumusan: `Diketahui barisan aritmetika dengan suku pertama a = 5 dan beda b = 4 pada kajian ${cleanSub}. Nilai suku ke-12 adalah ....`,
             correctOption: '49',
             distractors: ['45', '48', '52', '53'],
             pembahasanHint: 'U₁₂ = 5 + (12 − 1) × 4 = 5 + 44 = 49.',
           };
         }
         return {
-          rumusan: `Suatu gedung bioskop memiliki 15 baris kursi. Baris pertama berisi 20 kursi dan setiap baris berikutnya bertambah 3 kursi. Jumlah seluruh kursi dalam gedung tersebut adalah ....`,
+          rumusan: `Dalam penerapan ${cleanSub} (${cleanBab}), suatu gedung memiliki 15 baris kursi dengan baris pertama 20 kursi dan setiap baris berikutnya bertambah 3 kursi. Jumlah seluruh kursi adalah ....`,
           correctOption: '615 kursi',
           distractors: ['520 kursi', '585 kursi', '630 kursi', '650 kursi'],
           pembahasanHint: 'S₁₅ = ½ × 15 × (2(20) + 14(3)) = 7,5 × (40 + 42) = 615.',
         };
       }
 
+      if (focusText.includes('trigonometri') || focusText.includes('sin') || focusText.includes('cos') || focusText.includes('tan') || focusText.includes('sudut istimewa')) {
+        if (tier === 'LOTS') {
+          return {
+            rumusan: `Nilai dari sin 30° + cos 60° pada materi ${cleanSub} (${cleanBab}) adalah ....`,
+            correctOption: '1',
+            distractors: ['0', '½', '½√2', '√3'],
+            pembahasanHint: 'sin 30° = ½ dan cos 60° = ½, sehingga ½ + ½ = 1.',
+          };
+        }
+        if (tier === 'MOTS') {
+          return {
+            rumusan: `Pada segitiga siku-siku ABC (siku-siku di B), diketahui sin A = 3/5. Nilai cos A pada kajian ${cleanSub} adalah ....`,
+            correctOption: '4/5',
+            distractors: ['3/4', '4/3', '5/4', '5/3'],
+            pembahasanHint: 'Dengan triple Pythagoras (3, 4, 5), sisi samping = 4 sehingga cos A = 4/5.',
+          };
+        }
+        return {
+          rumusan: `Seorang pengamat melihat puncak menara dengan sudut elevasi 45° dari jarak 20 m pada penerapan ${cleanSub} (${cleanBab}). Jika tinggi mata pengamat 1,6 m, tinggi menara adalah ....`,
+          correctOption: '21,6 m',
+          distractors: ['18,4 m', '20,0 m', '20√2 m', '41,6 m'],
+          pembahasanHint: 't = 20 × tan 45° + 1,6 = 20(1) + 1,6 = 21,6 m.',
+        };
+      }
+
+      if (focusText.includes('fungsi kuadrat') || focusText.includes('kuadrat') || focusText.includes('spltv') || focusText.includes('fungsi komposisi') || focusText.includes('invers')) {
+        if (tier === 'LOTS') {
+          return {
+            rumusan: `Diketahui f(x) = 2x + 3 dan g(x) = x − 1 pada kajian ${cleanSub} (${cleanBab}). Rumus fungsi (f ∘ g)(x) adalah ....`,
+            correctOption: '2x + 1',
+            distractors: ['2x + 2', '2x − 1', '2x + 4', 'x + 2'],
+            pembahasanHint: '(f ∘ g)(x) = f(g(x)) = 2(x − 1) + 3 = 2x − 2 + 3 = 2x + 1.',
+          };
+        }
+        if (tier === 'MOTS') {
+          return {
+            rumusan: `Titik puncak (titik balik) grafik fungsi kuadrat f(x) = x² − 6x + 5 pada materi ${cleanSub} (${cleanBab}) adalah ....`,
+            correctOption: '(3, −4)',
+            distractors: ['(−3, 4)', '(3, 4)', '(6, −4)', '(−3, −4)'],
+            pembahasanHint: 'xₚ = −(−6)/(2·1) = 3, dan yₚ = 3² − 6(3) + 5 = −4.',
+          };
+        }
+        return {
+          rumusan: `Nilai optimum (maksimum/minimum) dari fungsi kuadrat f(x) = −2x² + 8x + 10 pada penerapan ${cleanSub} (${cleanBab}) adalah ....`,
+          correctOption: '18 (maksimum)',
+          distractors: ['10 (maksimum)', '16 (maksimum)', '2 (minimum)', '−18 (minimum)'],
+          pembahasanHint: 'xₚ = −8/(2(−2)) = 2, sehingga f(2) = −2(4) + 8(2) + 10 = 18.',
+        };
+      }
+
+      if (focusText.includes('statistika') || focusText.includes('peluang') || focusText.includes('kombinasi') || focusText.includes('permutasi') || focusText.includes('regresi') || focusText.includes('median')) {
+        if (tier === 'LOTS') {
+          return {
+            rumusan: `Median dari data terurut: 60, 65, 70, 75, 80, 85, 90 pada materi ${cleanSub} (${cleanBab}) adalah ....`,
+            correctOption: '75',
+            distractors: ['70', '72,5', '80', '85'],
+            pembahasanHint: 'Jumlah data ganjil (n = 7), nilai tengah adalah data ke-4 yaitu 75.',
+          };
+        }
+        if (tier === 'MOTS') {
+          return {
+            rumusan: `Dari sebuah dadu bermata enam yang dilempar sekali pada kajian ${cleanSub} (${cleanBab}), peluang muncul mata dadu genap atau prima adalah ....`,
+            correctOption: '5/6',
+            distractors: ['1/2', '2/3', '1/3', '1'],
+            pembahasanHint: 'Genap = {2, 4, 6}, Prima = {2, 3, 5}. Gabungan = {2, 3, 4, 5, 6}, maka P = 5/6.',
+          };
+        }
+        return {
+          rumusan: `Dalam pemilihan 3 pengurus kelas dari 6 calon kandidat pada materi ${cleanSub} (${cleanBab}) tanpa memperhatikan urutan jabatan, banyak susunan yang mungkin adalah ....`,
+          correctOption: '20 cara',
+          distractors: ['18 cara', '30 cara', '60 cara', '120 cara'],
+          pembahasanHint: 'Kombinasi C(6, 3) = 6! / (3! · 3!) = (6 × 5 × 4) / 6 = 20 cara.',
+        };
+      }
+
+      if (focusText.includes('matriks') || focusText.includes('determinan') || focusText.includes('vektor')) {
+        if (tier === 'LOTS') {
+          return {
+            rumusan: `Diketahui matriks A = [[4, 2], [3, 5]] pada materi ${cleanSub} (${cleanBab}). Nilai determinan matriks A adalah ....`,
+            correctOption: '14',
+            distractors: ['6', '10', '20', '26'],
+            pembahasanHint: 'det(A) = (4 × 5) − (2 × 3) = 20 − 6 = 14.',
+          };
+        }
+        return {
+          rumusan: `Diketahui vektor u = (3, −4) pada kajian ${cleanSub} (${cleanBab}). Panjang (modulus) vektor u adalah ....`,
+          correctOption: '5',
+          distractors: ['1', '7', '12', '25'],
+          pembahasanHint: '|u| = √(3² + (−4)²) = √(9 + 16) = √25 = 5.',
+        };
+      }
+
+      if (focusText.includes('lingkaran') || focusText.includes('busur') || focusText.includes('juring')) {
+        return {
+          rumusan: `Diketahui sebuah lingkaran berjari-jari 14 cm dengan sudut pusat juring 90° pada materi ${cleanSub} (${cleanBab}). Luas juring tersebut (π = 22/7) adalah ....`,
+          correctOption: '154 cm²',
+          distractors: ['44 cm²', '77 cm²', '308 cm²', '616 cm²'],
+          pembahasanHint: 'Luas juring = (90°/360°) × (22/7) × 14 × 14 = ¼ × 616 = 154 cm².',
+        };
+      }
+
+      if (focusText.includes('limit')) {
+        return {
+          rumusan: `Nilai dari lim (x→2) (x² − 4) / (x − 2) pada materi ${cleanSub} (${cleanBab}) adalah ....`,
+          correctOption: '4',
+          distractors: ['0', '2', '6', '8'],
+          pembahasanHint: 'Faktorkan pembilang: (x − 2)(x + 2)/(x − 2) = x + 2, lalu substitusi x = 2 → 2 + 2 = 4.',
+        };
+      }
+
+      if (focusText.includes('turunan') || focusText.includes('diferensial')) {
+        return {
+          rumusan: `Diketahui fungsi f(x) = 3x² − 4x + 7 pada materi ${cleanSub} (${cleanBab}). Turunan pertama f'(x) adalah ....`,
+          correctOption: '6x − 4',
+          distractors: ['3x − 4', '6x + 7', '6x² − 4', '3x² − 4'],
+          pembahasanHint: 'Turunan 3x² adalah 6x, turunan −4x adalah −4, dan turunan konstanta 7 adalah 0.',
+        };
+      }
+
+      if (focusText.includes('integral')) {
+        return {
+          rumusan: `Hasil dari ∫ (6x² + 4x − 3) dx pada materi ${cleanSub} (${cleanBab}) adalah ....`,
+          correctOption: '2x³ + 2x² − 3x + C',
+          distractors: ['6x³ + 4x² − 3x + C', '3x³ + 2x² − 3x + C', '2x³ + 4x² − 3 + C', '12x + 4 + C'],
+          pembahasanHint: '∫ 6x² dx = 2x³, ∫ 4x dx = 2x², ∫ −3 dx = −3x, ditambah konstanta C.',
+        };
+      }
+
+      if (focusText.includes('polinomial') || focusText.includes('suku banyak')) {
+        return {
+          rumusan: `Sisa pembagian suku banyak P(x) = x³ − 2x² + 5x − 4 oleh (x − 2) pada materi ${cleanSub} (${cleanBab}) adalah ....`,
+          correctOption: '6',
+          distractors: ['2', '4', '8', '10'],
+          pembahasanHint: 'Berdasarkan Teorema Sisa, sisa = P(2) = 2³ − 2(2²) + 5(2) − 4 = 8 − 8 + 10 − 4 = 6.',
+        };
+      }
+
+      if (focusText.includes('transformasi') || focusText.includes('translasi') || focusText.includes('refleksi') || focusText.includes('rotasi') || focusText.includes('dilatasi')) {
+        return {
+          rumusan: `Bayangan titik A(3, −2) setelah ditranslasikan oleh T = (4, 5) pada materi ${cleanSub} (${cleanBab}) adalah ....`,
+          correctOption: '(7, 3)',
+          distractors: ['(−1, −7)', '(7, −7)', '(−1, 3)', '(12, −10)'],
+          pembahasanHint: 'A\'(3 + 4, −2 + 5) = A\'(7, 3).',
+        };
+      }
+
+      if (focusText.includes('program linear') || focusText.includes('pertidaksamaan') || focusText.includes('spldv')) {
+        return {
+          rumusan: `Diketahui sistem persamaan linear 2x + y = 8 dan x − y = 1 pada kajian ${cleanSub} (${cleanBab}). Nilai x + y adalah ....`,
+          correctOption: '5',
+          distractors: ['3', '4', '6', '7'],
+          pembahasanHint: 'Jumlahkan kedua persamaan: 3x = 9 → x = 3, maka y = 2, sehingga x + y = 5.',
+        };
+      }
+
       return {
-        rumusan: getFlexibleRumusan(domain, tier, cleanBab, cleanSub, subject),
-        correctOption: `Setiap variabel dan operasi pada ${cleanSub} wajib memenuhi syarat domain dan kaidah fungsi yang berlaku`,
+        rumusan: getFlexibleRumusan(domain, tier, cleanBab, cleanSub, variantIdx),
+        correctOption: `Konsep dan kaidah ${cleanSub} pada ${cleanBab} diterapkan secara konsisten sesuai syarat domain yang berlaku`,
         distractors: [
-          `Nilai variabel dapat ditentukan secara bebas tanpa memperhatikan batas domain`,
-          `Setiap fungsi selalu bernilai konstan untuk semua bilangan real`,
-          `Koefisien utama suatu persamaan selalu bernilai nol`,
-          `Grafik fungsi selalu memotong sumbu koordinat di titik asal (0,0)`,
+          `Nilai variabel pada ${cleanSub} ditentukan tanpa memperhatikan syarat domain`,
+          `Setiap persamaan pada ${cleanBab} selalu bernilai konstan untuk semua bilangan`,
+          `Operasi ${cleanSub} tidak dipengaruhi oleh perubahan koefisien maupun variabel`,
+          `Hasil perhitungan ${cleanBab} tidak memerlukan pembuktian sifat aljabar`,
         ],
-        pembahasanHint: `Pemenuhan syarat domain dan kaidah aljabar adalah kunci utama penyelesaian ${cleanSub}.`,
+        pembahasanHint: `Pemenuhan syarat domain dan kaidah matematika pada ${cleanSub} (${cleanBab}) menghasilkan penyelesaian yang valid.`,
       };
     }
 
-    // Geografi / Sosial / Sejarah / Ekonomi / Sosiologi
-    if (topicText.includes('konsep geografi') || topicText.includes('peta') || topicText.includes('sig') || topicText.includes('penginderaan')) {
+    if (focusText.includes('konsep geografi') || focusText.includes('peta') || focusText.includes('sig') || focusText.includes('penginderaan')) {
       if (tier === 'LOTS') {
         return {
-          rumusan: `Perhatikan fenomena berikut: "Wilayah Jakarta dapat ditempuh dalam waktu 3 jam menggunakan kereta cepat dari Bandung." Konsep geografi yang berkaitan dengan pernyataan tersebut adalah konsep ....`,
+          rumusan: `Perhatikan fenomena pada materi ${cleanSub} (${cleanBab}): "Wilayah Jakarta dapat ditempuh dalam waktu 3 jam menggunakan kereta cepat dari Bandung." Konsep geografi yang sesuai adalah ....`,
           correctOption: 'keterjangkauan (aksesibilitas)',
           distractors: ['lokasi absolut', 'morfologi', 'pola', 'aglomerasi'],
           pembahasanHint: 'Kemudahan pencapaian suatu tempat dipengaruhi oleh sarana transportasi, yang merujuk pada konsep keterjangkauan.',
@@ -495,108 +835,244 @@ function buildDomainQuestionBlueprint(params: {
       }
       if (tier === 'MOTS') {
         return {
-          rumusan: `Pusat perbelanjaan (mal) cenderung mengelompok di kawasan perkotaan yang strategis dan mudah diakses konsumen. Dalam ${cleanBab}, fenomena ini dianalisis menggunakan konsep ....`,
+          rumusan: `Pusat perbelanjaan (mal) cenderung mengelompok di kawasan perkotaan yang strategis dan mudah diakses konsumen. Dalam ${cleanBab} (${cleanSub}), fenomena ini dianalisis menggunakan konsep ....`,
           correctOption: 'aglomerasi',
           distractors: ['nilai kegunaan', 'diferensiasi area', 'interaksi interdependensi', 'keterkaitan keruangan'],
           pembahasanHint: 'Kecenderungan persebaran yang mengelompok pada suatu wilayah disebut konsep aglomerasi.',
         };
       }
       return {
-        rumusan: `Kawasan dataran rendah dimanfaatkan penduduk untuk pertanian sawah, sedangkan daerah pegunungan tinggi ditanami sayuran hortikultura. Perbedaan karakteristik pemanfaatan muka bumi ini dikaji dalam ${cleanBab} menggunakan konsep ....`,
+        rumusan: `Kawasan dataran rendah dimanfaatkan penduduk untuk pertanian sawah, sedangkan daerah pegunungan tinggi ditanami sayuran hortikultura. Perbedaan karakteristik pemanfaatan muka bumi dalam ${cleanBab} (${cleanSub}) dikaji menggunakan konsep ....`,
         correctOption: 'diferensiasi area',
         distractors: ['pola', 'morfologi', 'nilai kegunaan', 'lokasi relatif'],
         pembahasanHint: 'Perbedaan corak antarwilayah di muka bumi menunjukkan karakteristik khas wilayah yang disebut diferensiasi area.',
       };
     }
 
-    if (domain === 'EKONOMI' || topicText.includes('ekonomi') || topicText.includes('permintaan') || topicText.includes('pasar') || topicText.includes('inflasi')) {
+    if (domain === 'EKONOMI') {
+      if (focusText.includes('kelangkaan') || focusText.includes('permintaan') || focusText.includes('penawaran') || focusText.includes('pasar') || focusText.includes('elastisitas') || focusText.includes('biaya peluang')) {
+        return {
+          rumusan:
+            tier === 'LOTS'
+              ? `Pada materi ${cleanSub} (${cleanBab}), inti masalah ekonomi yang dihadapi manusia dalam pemenuhan kebutuhan hidup bersumber dari ....`
+              : `Apabila pada kajian ${cleanSub} (${cleanBab}) harga daging ayam naik dari Rp35.000 menjadi Rp40.000/kg sehingga permintaan turun dari 200 kg menjadi 150 kg, koefisien elastisitas permintaan bersifat ....`,
+          correctOption:
+            tier === 'LOTS'
+              ? `Keterbatasan sumber daya di satu sisi dan kebutuhan manusia yang tidak terbatas di sisi lain`
+              : `Elastis (|Ed| > 1)`,
+          distractors: [
+            `Kelimpahan barang dan jasa yang tidak terserap oleh pasar`,
+            `Tingginya pendapatan per kapita yang menurunkan produksi`,
+            `Inelastis sempurna (|Ed| = 0)`,
+            `Uniter (|Ed| = 1)`,
+          ],
+          pembahasanHint: `Kajian ${cleanSub} membahas kelangkaan sumber daya dan respons permintaan terhadap perubahan harga.`,
+        };
+      }
+      if (focusText.includes('inflasi') || focusText.includes('moneter') || focusText.includes('fiskal') || focusText.includes('pendapatan nasional') || focusText.includes('gdp') || focusText.includes('apbn')) {
+        return {
+          rumusan: `Dalam kajian ${cleanSub} (${cleanBab}), kebijakan bank sentral menaikkan suku bunga acuan (BI Rate) saat terjadi inflasi tinggi bertujuan untuk ....`,
+          correctOption: `Mengurangi jumlah uang beredar di masyarakat agar kestabilan harga terjaga`,
+          distractors: [
+            `Mendorong masyarakat mengambil kredit konsumtif secara besar-besaran`,
+            `Meningkatkan jumlah uang beredar tanpa kendali`,
+            `Menurunkan nilai tukar mata uang domestik secara drastis`,
+            `Menghentikan seluruh aktivitas perdagangan antarwilayah`,
+          ],
+          pembahasanHint: `Kenaikan suku bunga acuan merupakan instrumen kebijakan moneter kontraktif dalam materi ${cleanSub}.`,
+        };
+      }
+      if (focusText.includes('akuntansi') || focusText.includes('jurnal') || focusText.includes('neraca') || focusText.includes('persamaan dasar')) {
+        return {
+          rumusan: `Pada materi ${cleanSub} (${cleanBab}), apabila perusahaan membeli perlengkapan kantor secara tunai sebesar Rp2.500.000, pengaruhnya terhadap persamaan dasar akuntansi adalah ....`,
+          correctOption: `Aset (Perlengkapan) bertambah Rp2.500.000 dan Aset (Kas) berkurang Rp2.500.000`,
+          distractors: [
+            `Aset bertambah Rp2.500.000 dan Utang bertambah Rp2.500.000`,
+            `Aset berkurang Rp2.500.000 dan Modal berkurang Rp2.500.000`,
+            `Kas bertambah Rp2.500.000 dan Modal bertambah Rp2.500.000`,
+            `Utang berkurang Rp2.500.000 dan Kas bertambah Rp2.500.000`,
+          ],
+          pembahasanHint: `Pembelian tunai hanya mengubah komposisi aset (Kas berkurang, Perlengkapan bertambah).`,
+        };
+      }
       return {
-        rumusan:
-          tier === 'LOTS'
-            ? `Inti masalah ekonomi yang dihadapi manusia dalam pemenuhan kebutuhan hidup bersumber dari ....`
-            : tier === 'MOTS'
-            ? `Apabila harga daging ayam naik dari Rp35.000 menjadi Rp40.000 per kg yang menyebabkan penurunan jumlah permintaan dari 200 kg menjadi 150 kg, koefisien elastisitas permintaan (E_d) bersifat ....`
-            : `Kebijakan bank sentral dengan menaikkan suku bunga acuan (BI Rate) pada saat perekonomian mengalami inflasi tinggi bertujuan untuk ....`,
-        correctOption:
-          tier === 'LOTS'
-            ? `Keterbatasan sumber daya alam di satu sisi dan kebutuhan manusia yang tak terbatas di sisi lain`
-            : tier === 'MOTS'
-            ? `Elastis (|E_d| > 1)`
-            : `Mengurangi jumlah uang beredar di masyarakat agar harga barang kembali stabil`,
+        rumusan: getFlexibleRumusan(domain, tier, cleanBab, cleanSub, variantIdx),
+        correctOption: `Pengelolaan ${cleanSub} yang efisien, produktif, dan sesuai prinsip ${cleanBab}`,
         distractors: [
-          `Kelimpahan barang dan jasa yang tidak terserap oleh pasar`,
-          `Tingginya pendapatan per kapita yang memicu penurunan produksi`,
-          `Inelastis sempurna (|E_d| = 0)`,
-          `Menambah volume kredit perbankan secara agresif`,
+          `Pengabaian perhitungan biaya dan manfaat dalam pengambilan keputusan ${cleanSub}`,
+          `Peningkatan pengeluaran tanpa mempertimbangkan daya beli masyarakat`,
+          `Penghapusan mekanisme pencatatan dan evaluasi pada ${cleanBab}`,
+          `Penetapan kebijakan yang bertentangan dengan prinsip ekonomi rasional`,
         ],
-        pembahasanHint: `Analisis ekonomi mengkaji kelangkaan sumber daya, elastisitas pasar, dan instrumen kebijakan moneter.`,
+        pembahasanHint: `Prinsip utama dalam materi ${cleanSub} (${cleanBab}) adalah efisiensi dan pengambilan keputusan ekonomi rasional.`,
       };
     }
 
     if (domain === 'FISIKA') {
+      if (focusText.includes('ukur') || focusText.includes('besaran') || focusText.includes('satuan') || focusText.includes('angka penting') || focusText.includes('jangka sorong')) {
+        return {
+          rumusan: `Pada kajian ${cleanSub} (${cleanBab}), besaran turunan dalam sistem SI yang memiliki satuan kg·m/s² adalah ....`,
+          correctOption: 'Gaya (Newton)',
+          distractors: ['Usaha (Joule)', 'Daya (Watt)', 'Tekanan (Pascal)', 'Momentum (kg·m/s)'],
+          pembahasanHint: 'Berdasarkan F = m·a, satuan gaya adalah kg·m/s² = Newton.',
+        };
+      }
+      if (focusText.includes('energi') || focusText.includes('kinematika') || focusText.includes('dinamika') || focusText.includes('gerak') || focusText.includes('newton') || focusText.includes('usaha') || focusText.includes('momentum')) {
+        return {
+          rumusan:
+            tier === 'HOTS'
+              ? `Pada materi ${cleanSub} (${cleanBab}), sebuah bola dilempar vertikal ke atas dengan kecepatan awal 20 m/s (g = 10 m/s²). Ketinggian maksimum yang dicapai bola adalah ....`
+              : `Dalam kajian ${cleanSub} (${cleanBab}), sebuah benda bermassa 1.000 kg bergerak dengan kelajuan 20 m/s. Besar energi kinetik (Eₖ) benda tersebut adalah ....`,
+          correctOption: tier === 'HOTS' ? '20 meter' : '200.000 Joule (200 kJ)',
+          distractors:
+            tier === 'HOTS'
+              ? ['10 meter', '15 meter', '30 meter', '40 meter']
+              : ['10.000 Joule', '20.000 Joule', '100.000 Joule', '400.000 Joule'],
+          pembahasanHint:
+            tier === 'HOTS'
+              ? 'h_max = v₀² ÷ (2g) = 400 ÷ 20 = 20 meter.'
+              : 'Eₖ = ½m·v² = ½(1000)(20)² = 200.000 J.',
+        };
+      }
+      if (focusText.includes('fluida') || focusText.includes('tekanan') || focusText.includes('pascal') || focusText.includes('archimedes') || focusText.includes('bernoulli')) {
+        return {
+          rumusan: `Pada materi ${cleanSub} (${cleanBab}), sebuah pompa hidrolik memiliki luas penampang kecil A₁ = 10 cm² dan penampang besar A₂ = 100 cm². Jika gaya tekan F₁ = 50 N, gaya angkat F₂ yang dihasilkan adalah ....`,
+          correctOption: '500 N',
+          distractors: ['50 N', '100 N', '250 N', '5.000 N'],
+          pembahasanHint: 'Hukum Pascal: F₁/A₁ = F₂/A₂ → F₂ = (100/10) × 50 = 500 N.',
+        };
+      }
+      if (focusText.includes('listrik') || focusText.includes('rangkaian') || focusText.includes('hambatan') || focusText.includes('ohm') || focusText.includes('coulomb') || focusText.includes('magnet')) {
+        return {
+          rumusan: `Pada materi ${cleanSub} (${cleanBab}), sebuah penghantar berhambatan 12 Ω dihubungkan pada tegangan 24 Volt. Kuat arus listrik yang mengalir adalah ....`,
+          correctOption: '2 Ampere',
+          distractors: ['0,5 Ampere', '4 Ampere', '12 Ampere', '36 Ampere'],
+          pembahasanHint: 'Hukum Ohm: I = V ÷ R = 24 ÷ 12 = 2 A.',
+        };
+      }
       return {
-        rumusan:
-          tier === 'LOTS'
-            ? `Besaran turunan dalam sistem SI yang memiliki satuan kg·m/s² adalah ....`
-            : tier === 'MOTS'
-            ? `Sebuah mobil bermassa 1.000 kg bergerak dengan kelajuan 20 m/s. Besar energi kinetik (E_k) mobil tersebut adalah ....`
-            : `Sebuah bola dilempar vertikal ke atas dengan kecepatan awal 20 m/s dari permukaan tanah (g = 10 m/s²). Ketinggian maksimum yang dicapai bola adalah ....`,
-        correctOption: tier === 'LOTS' ? 'Gaya (Newton)' : tier === 'MOTS' ? '200.000 Joule (200 kJ)' : '20 meter',
-        distractors: ['Usaha', 'Daya', 'Tekanan', '100.000 J', '10 meter', '40 meter'],
-        pembahasanHint: 'E_k = ½m·v² = ½(1000)(20)² = 200.000 J. H_max = v₀² / (2g) = 400 / 20 = 20 m.',
+        rumusan: getFlexibleRumusan(domain, tier, cleanBab, cleanSub, variantIdx),
+        correctOption: `Hukum dan persamaan fisis pada ${cleanSub} (${cleanBab}) berlaku konsisten dalam sistem besaran SI`,
+        distractors: [
+          `Nilai besaran fisis pada ${cleanSub} berubah secara acak tanpa hubungan kausal`,
+          `Satuan internasional dapat diabaikan dalam perhitungan ${cleanBab}`,
+          `Variabel gaya, energi, dan waktu tidak saling memengaruhi pada ${cleanSub}`,
+          `Hasil pengukuran ${cleanBab} selalu bebas dari ketidakpastian`,
+        ],
+        pembahasanHint: `Penyelesaian ${cleanSub} (${cleanBab}) didasarkan pada hukum kekekalan dan konsistensi satuan SI.`,
       };
     }
 
     if (domain === 'KIMIA') {
+      if (focusText.includes('atom') || focusText.includes('elektron') || focusText.includes('periodik') || focusText.includes('kimia hijau')) {
+        return {
+          rumusan: `Dalam kajian ${cleanSub} (${cleanBab}), partikel subatom penyusun inti atom yang tidak bermuatan listrik adalah ....`,
+          correctOption: 'Neutron',
+          distractors: ['Proton', 'Elektron', 'Positron', 'Nukleofil'],
+          pembahasanHint: 'Inti atom tersusun atas proton (+) dan neutron (netral).',
+        };
+      }
+      if (focusText.includes('stoikiometri') || focusText.includes('mol') || focusText.includes('molaritas') || focusText.includes('larutan')) {
+        return {
+          rumusan:
+            tier === 'MOTS'
+              ? `Pada materi ${cleanSub} (${cleanBab}), massa molekul relatif (Mᵣ) dari senyawa glukosa C₆H₁₂O₆ (Aᵣ C = 12, H = 1, O = 16) adalah ....`
+              : `Sebanyak 4 gram NaOH (Mᵣ = 40) dilarutkan dalam air hingga volume 500 mL pada kajian ${cleanSub} (${cleanBab}). Molaritas larutan adalah ....`,
+          correctOption: tier === 'MOTS' ? '180' : '0,2 M',
+          distractors:
+            tier === 'MOTS'
+              ? ['90', '144', '160', '342']
+              : ['0,05 M', '0,1 M', '0,4 M', '2,0 M'],
+          pembahasanHint:
+            tier === 'MOTS'
+              ? 'Mᵣ C₆H₁₂O₆ = 6(12) + 12(1) + 6(16) = 180.'
+              : 'M = (4/40) ÷ 0,5 = 0,1 ÷ 0,5 = 0,2 M.',
+        };
+      }
+      if (focusText.includes('asam') || focusText.includes('basa') || focusText.includes('titrasi') || focusText.includes('ph') || focusText.includes('penyangga') || focusText.includes('hidrolisis')) {
+        return {
+          rumusan: `Pada kajian ${cleanSub} (${cleanBab}), nilai pH dari larutan asam kuat HCl 0,01 M adalah ....`,
+          correctOption: '2',
+          distractors: ['1', '3', '7', '12'],
+          pembahasanHint: '[H⁺] = 0,01 = 10⁻², sehingga pH = −log(10⁻²) = 2.',
+        };
+      }
       return {
-        rumusan:
-          tier === 'LOTS'
-            ? `Partikel subatom penyusun inti atom yang tidak bermuatan listrik adalah ....`
-            : tier === 'MOTS'
-            ? `Massa molekul relatif (M_r) dari senyawa glukosa C₆H_{12}O₆ (A_r C = 12, H = 1, O = 16) adalah ....`
-            : `Sebanyak 4 gram NaOH (M_r = 40) dilarutkan dalam air hingga volume larutan mencapai 500 mL. Konsentrasi molaritas (M) larutan tersebut adalah ....`,
-        correctOption: tier === 'LOTS' ? 'Neutron' : tier === 'MOTS' ? '180' : '0,2 M',
-        distractors: ['Proton', 'Elektron', 'Positron', '90', '342', '0,1 M'],
-        pembahasanHint: 'M_r C₆H₁₂O₆ = 6(12) + 12(1) + 6(16) = 180. M = (4/40) ÷ 0,5 = 0,1 ÷ 0,5 = 0,2 M.',
+        rumusan: getFlexibleRumusan(domain, tier, cleanBab, cleanSub, variantIdx),
+        correctOption: `Mekanisme reaksi dan sifat materi pada ${cleanSub} (${cleanBab}) memenuhi hukum dasar kimia`,
+        distractors: [
+          `Massa zat sebelum dan sesudah reaksi pada ${cleanSub} selalu hilang seluruhnya`,
+          `Persamaan reaksi ${cleanBab} tidak memerlukan penyetaraan koefisien`,
+          `Ikatan antaratom pada ${cleanSub} terjadi tanpa interaksi elektron valensi`,
+          `Prinsip kimia hijau mendukung pembuangan limbah reaktif secara langsung`,
+        ],
+        pembahasanHint: `Kajian ${cleanSub} pada ${cleanBab} mengikuti hukum dasar kimia dan stoikiometri reaksi.`,
       };
     }
 
     if (domain === 'BIOLOGI') {
+      if (focusText.includes('sel') || focusText.includes('fotosintesis') || focusText.includes('kloroplas') || focusText.includes('membran') || focusText.includes('metabolisme')) {
+        return {
+          rumusan:
+            tier === 'LOTS'
+              ? `Dalam materi ${cleanSub} (${cleanBab}), organel sel tumbuhan yang berfungsi sebagai tempat berlangsungnya proses fotosintesis adalah ....`
+              : `Pada kajian ${cleanSub} (${cleanBab}), perbedaan utama antara sel prokariotik dan sel eukariotik terletak pada ada tidaknya ....`,
+          correctOption: tier === 'LOTS' ? 'Kloroplas' : 'Membran inti sel (nukleus sejati)',
+          distractors: ['Mitokondria', 'Ribosom', 'Retikulum endoplasma', 'Dinding sel'],
+          pembahasanHint: 'Kloroplas berperan dalam fotosintesis; sel prokariotik tidak memiliki membran inti.',
+        };
+      }
+      if (focusText.includes('genetik') || focusText.includes('dna') || focusText.includes('rna') || focusText.includes('mendel') || focusText.includes('pewarisan') || focusText.includes('mutasi')) {
+        return {
+          rumusan: `Pada materi ${cleanSub} (${cleanBab}), persilangan monohibrid dominan penuh antara dua individu heterozigot (Aa × Aa) menghasilkan rasio fenotipe F₂ sebesar ....`,
+          correctOption: '3 : 1',
+          distractors: ['1 : 1', '1 : 2 : 1', '2 : 1', '9 : 3 : 3 : 1'],
+          pembahasanHint: 'Aa × Aa → genotipe 1 AA : 2 Aa : 1 aa, sehingga fenotipe dominan : resesif = 3 : 1.',
+        };
+      }
+      if (focusText.includes('virus') || focusText.includes('ekosistem') || focusText.includes('keanekaragaman') || focusText.includes('hayati')) {
+        return {
+          rumusan: `Dalam kajian ${cleanSub} (${cleanBab}), komponen biotik dalam ekosistem yang berperan menguraikan sisa makhluk hidup menjadi zat anorganik adalah ....`,
+          correctOption: 'Dekomposer (pengurai)',
+          distractors: ['Produsen', 'Konsumen primer', 'Konsumen puncak', 'Herbivora'],
+          pembahasanHint: 'Dekomposer (bakteri dan jamur) menguraikan bahan organik menjadi unsur hara bagi produsen.',
+        };
+      }
       return {
-        rumusan:
-          tier === 'LOTS'
-            ? `Organel sel tumbuhan yang berfungsi sebagai tempat berlangsungnya proses fotosintesis adalah ....`
-            : tier === 'MOTS'
-            ? `Perbedaan utama antara struktur sel prokariotik dan sel eukariotik terletak pada ada tidaknya ....`
-            : `Apabila tumbuhan dilarutkan dalam larutan hipertonik pekat, peristiwa yang akan terjadi pada sel tumbuhan tersebut adalah ....`,
-        correctOption: tier === 'LOTS' ? 'Kloroplas' : tier === 'MOTS' ? 'Membran inti sel (nukleus sejati)' : 'Plasmolisis (lepasnya membran plasma dari dinding sel)',
-        distractors: ['Mitokondria', 'Ribosom', 'Retikulum endoplasma', 'Dinding sel', 'Klorofil bebas', 'Turgid'],
-        pembahasanHint: 'Kloroplas mengandung klorofil untuk fotosintesis. Sel prokariotik tidak memiliki membran inti sejati.',
+        rumusan: getFlexibleRumusan(domain, tier, cleanBab, cleanSub, variantIdx),
+        correctOption: `Struktur dan proses biologis pada ${cleanSub} bekerja secara terkoordinasi menjaga homeostasis (${cleanBab})`,
+        distractors: [
+          `Fungsi fisiologis pada ${cleanSub} berlangsung tanpa keterkaitan antarorgan atau sel`,
+          `Faktor lingkungan tidak pernah memengaruhi mekanisme kerja ${cleanSub}`,
+          `Setiap proses hayati pada ${cleanBab} terjadi tanpa melibatkan enzim maupun energi`,
+          `Adaptasi makhluk hidup pada ${cleanSub} bersifat acak tanpa interaksi ekosistem`,
+        ],
+        pembahasanHint: `Kajian ${cleanSub} dalam ${cleanBab} menjelaskan keterkaitan struktur, fungsi biologis, dan keseimbangan sistem hidup.`,
       };
     }
 
     if (domain === 'AGAMA') {
       return {
-        rumusan: `Dalam mempelajari materi ${cleanBab} (${cleanSub}), nilai akhlak mulia dan perilaku terpuji yang harus diamalkan peserta didik adalah ....`,
-        correctOption: `Menjunjung tinggi kejujuran, amanah, tanggung jawab, dan kepedulian sosial`,
+        rumusan: `Dalam mempelajari materi ${cleanBab} dengan lingkup ${cleanSub}, sikap dan perilaku terpuji yang harus diaktualisasikan peserta didik adalah ....`,
+        correctOption: `Mengamalkan nilai ${cleanSub} melalui kejujuran, tanggung jawab, amanah, dan kepedulian sosial`,
         distractors: [
           `Mengutamakan egoisme kelompok dalam kehidupan bermasyarakat`,
-          `Menyebarkan keraguan terhadap nilai-nilai keimanan`,
-          `Bersikap apatis terhadap penderitaan sesama manusia`,
-          `Melakukan perbuatan yang merugikan kerukunan antarumat`,
+          `Mengabaikan pesan moral ${cleanSub} dalam pergaulan sehari-hari`,
+          `Bersikap apatis terhadap kerukunan dan kemaslahatan sesama`,
+          `Melakukan tindakan yang bertentangan dengan nilai luhur ${cleanBab}`,
         ],
-        pembahasanHint: `Materi ${cleanBab} menekankan pembentukan karakter mulia dan ketakwaan kepada Tuhan Yang Maha Esa.`,
+        pembahasanHint: `Materi ${cleanBab} (${cleanSub}) menekankan internalisasi nilai keimanan dan akhlak mulia dalam kehidupan nyata.`,
       };
     }
 
     return {
-      rumusan: getFlexibleRumusan(domain, tier, cleanBab, cleanSub, subject),
-      correctOption: `Kajian ${cleanSub} terbukti relevan dan didukung oleh fakta empiris serta teori ${subject}`,
+      rumusan: getFlexibleRumusan(domain, tier, cleanBab, cleanSub, variantIdx),
+      correctOption: `Kajian ${cleanSub} pada ${cleanBab} selaras dengan fakta empiris serta kaidah keilmuan ${subject}`,
       distractors: [
-        `Aspek ${cleanSub} berdiri sendiri tanpa kaitan dengan materi ${cleanBab}`,
-        `Analisis ${cleanSub} mengabaikan prinsip dan metodologi ilmiah`,
-        `Seluruh fenomena ${cleanSub} bersifat spekulatif tanpa pembuktian`,
-        `Penerapan ${cleanSub} bertentangan dengan norma dan kaidah baku`,
+        `Aspek ${cleanSub} berdiri sendiri tanpa keterkaitan dengan materi ${cleanBab}`,
+        `Analisis ${cleanSub} mengabaikan prinsip dan bukti ilmiah yang sahih`,
+        `Seluruh fenomena ${cleanSub} bersifat spekulatif tanpa dasar teori ${subject}`,
+        `Penerapan ${cleanSub} bertentangan dengan kaidah pembelajaran ${cleanBab}`,
       ],
       pembahasanHint: `Konsep ${cleanSub} pada ${cleanBab} didasarkan pada prinsip keilmuan ${subject} yang teruji.`,
     };
@@ -605,28 +1081,28 @@ function buildDomainQuestionBlueprint(params: {
   // 2. JAWABAN SINGKAT
   if (type === 'JAWABAN_SINGKAT') {
     return {
-      rumusan: `Sebutkan istilah utama atau besaran baku yang menjadi fokus kajian pada lingkup materi ${cleanSub} (${cleanBab})!`,
+      rumusan: `Tuliskan konsep inti, istilah baku, atau jawaban singkat yang tepat terkait lingkup materi ${cleanSub} pada ${cleanBab}!`,
       kunciSingkat: cleanSub,
-      pembahasanHint: `Jawaban yang diharapkan adalah istilah ${cleanSub}.`,
+      pembahasanHint: `Kunci jawaban singkat mengacu pada konsep inti ${cleanSub} dalam materi ${cleanBab}.`,
     };
   }
 
   // 3. MENJODOHKAN
   if (type === 'MENJODOHKAN') {
     return {
-      rumusan: `Pasangkanlah konsep atau istilah pada materi ${cleanBab} (kolom kiri) dengan penjelasan atau rumus padanannya (kolom kanan)!`,
+      rumusan: `Pasangkanlah konsep atau istilah pada materi ${cleanBab} (kolom kiri) dengan penjelasan atau padanannya terkait ${cleanSub} (kolom kanan)!`,
       pairs: [
         {
-          premise: `Kajian ${cleanSub}`,
-          match: `Prinsip dasar utama pada ${cleanBab}`,
+          premise: `Pengertian dasar ${cleanSub}`,
+          match: `Konsep inti yang dikaji pada ${cleanBab}`,
         },
         {
           premise: `Penerapan ${cleanAlt}`,
-          match: `Implementasi nyata dalam kajian ${subject}`,
+          match: `Implementasi kontekstual dalam mata pelajaran ${subject}`,
         },
         {
-          premise: `Evaluasi ${cleanSub}`,
-          match: `Verifikasi ketepatan dan analisis rasional`,
+          premise: `Analisis masalah ${cleanSub}`,
+          match: `Pemecahan kasus berdasarkan prinsip ${cleanBab}`,
         },
       ],
     };
@@ -634,11 +1110,11 @@ function buildDomainQuestionBlueprint(params: {
 
   // 4. ESAI / URAIAN
   return {
-    rumusan: `Jelaskan secara sistematis konsep ${cleanSub} pada materi ${cleanBab} (${subject}), lalu berikan contoh konkret penerapannya dalam kehidupan sehari-hari!`,
+    rumusan: `Uraikan secara runtut konsep ${cleanSub} dalam materi ${cleanBab} (${subject}), lalu berikan contoh penerapannya dalam kehidupan sehari-hari!`,
     kunciEsaiSteps: [
-      `Menjelaskan definisi dan prinsip dasar ${cleanSub} secara runtut`,
-      `Menguraikan analisis atau langkah penerapan pada ${cleanBab}`,
-      `Menyimpulkan manfaat dan contoh konkret dalam kehidupan nyata`,
+      `Menjelaskan definisi dan prinsip dasar ${cleanSub} pada materi ${cleanBab} secara runtut`,
+      `Menguraikan analisis keterkaitan ${cleanSub} dengan permasalahan kontekstual`,
+      `Menyimpulkan manfaat dan contoh konkret penerapan ${cleanSub} dalam kehidupan nyata`,
     ],
   };
 }
@@ -648,7 +1124,8 @@ export function generateSmartDraftContentForQuestion(
   metadata: ExamMetadata,
   tpText: string,
   replacePlaceholders = true,
-  forceReplaceAutoDraft = false
+  forceReplaceAutoDraft = false,
+  indexWithinBab?: number
 ): QuestionItem {
   const matchedBab = (metadata.babMateriList || []).find(
     (b) => b.id === q.babId || b.namaBab === q.namaBab
@@ -657,7 +1134,10 @@ export function generateSmartDraftContentForQuestion(
   const babTitle = cleanBabTitle(q, matchedBab);
   const scope = cleanScopeText(q, matchedBab);
   const subtopics = extractSubtopics(scope, babTitle);
-  const subIdx = Math.max(0, q.nomor - 1);
+  const subIdx =
+    indexWithinBab !== undefined
+      ? Math.max(0, indexWithinBab)
+      : Math.max(0, q.nomor - 1);
   const subtopic = subtopics[subIdx % subtopics.length];
   const altSubtopic = subtopics[(subIdx + 1) % subtopics.length];
   const tier = resolveTier(q);
@@ -995,60 +1475,89 @@ export function autoPopulateQuestionsForColumns(
     : 'CP_046_2025';
   const regShort = CP_REGULATIONS[regCode].short;
 
-  return questions.map((q) => {
-    const matchedBab = (metadata.babMateriList || []).find(
+  const babList = metadata.babMateriList || [];
+  return questions.map((q, qIdx) => {
+    let matchedBab = babList.find(
       (b) => b.id === q.babId || b.namaBab === q.namaBab
     );
+    if (!matchedBab && options?.refreshMetadataFields && babList.length > 0) {
+      matchedBab = babList[qIdx % babList.length];
+    }
     const babKey = matchedBab?.id || q.babId || '__default__';
     const indexInBab = babCounterMap.get(babKey) || 0;
     babCounterMap.set(babKey, indexInBab + 1);
 
+    const expectedMateri = matchedBab
+      ? `${matchedBab.namaBab}${
+          matchedBab.lingkupMateri ? ` — ${matchedBab.lingkupMateri}` : ''
+        }`
+      : q.materi;
+
+    const syncedBaseQ: QuestionItem =
+      options?.refreshMetadataFields && matchedBab
+        ? {
+            ...q,
+            babId: matchedBab.id,
+            namaBab: matchedBab.namaBab,
+            materi: expectedMateri,
+            kdCp:
+              !q.manualFields?.kdCp && matchedBab.capaianPembelajaran
+                ? `${matchedBab.capaianPembelajaran}${
+                    matchedBab.elemenCp ? ` [Elemen: ${matchedBab.elemenCp}]` : ''
+                  }`
+                : q.kdCp,
+          }
+        : q;
+
     const nextTp =
-      !q.manualFields?.tujuanPembelajaran &&
+      !syncedBaseQ.manualFields?.tujuanPembelajaran &&
       (options?.forceSyncTpFromBab ||
-        !q.tujuanPembelajaran ||
-        isAutoGeneratedBabTp(q.tujuanPembelajaran))
-        ? resolveTpForQuestionInBab(q, matchedBab, indexInBab, metadata)
-        : q.tujuanPembelajaran;
+        options?.refreshMetadataFields ||
+        !syncedBaseQ.tujuanPembelajaran ||
+        isAutoGeneratedBabTp(syncedBaseQ.tujuanPembelajaran))
+        ? resolveTpForQuestionInBab(syncedBaseQ, matchedBab, indexInBab, metadata)
+        : syncedBaseQ.tujuanPembelajaran;
 
     const shouldGenerateSmart = Boolean(
       options?.smartFillPlaceholders ||
-        isAutoGeneratedDraftQuestion(q) ||
-        (q.type === 'PG' && !q.useOptionE)
+        isAutoGeneratedDraftQuestion(syncedBaseQ) ||
+        (syncedBaseQ.type === 'PG' && !syncedBaseQ.useOptionE)
     );
 
     const forceRefreshDraft = Boolean(
       (options?.forceRefreshAutoDrafts || options?.refreshMetadataFields) &&
-        isAutoGeneratedDraftQuestion(q)
+        isAutoGeneratedDraftQuestion(syncedBaseQ)
     );
 
     const baseDraftRaw = shouldGenerateSmart
       ? generateSmartDraftContentForQuestion(
-          q,
+          syncedBaseQ,
           metadata,
           nextTp || '',
           true,
-          forceRefreshDraft
+          forceRefreshDraft,
+          indexInBab
         )
       : {
-          ...q,
+          ...syncedBaseQ,
           tujuanPembelajaran: nextTp,
-          useOptionE: q.type === 'PG' ? true : q.useOptionE,
+          useOptionE: syncedBaseQ.type === 'PG' ? true : syncedBaseQ.useOptionE,
           sumberBuku:
             !q.manualFields?.sumberBuku &&
             (options?.refreshMetadataFields || !q.sumberBuku)
               ? `Panduan ${metadata.mataPelajaran} ${metadata.kelas} (${metadata.fase}) · ${regShort} (${metadata.kurikulum})`
               : q.sumberBuku,
           indikator:
-            !q.manualFields?.indikator &&
+            !syncedBaseQ.manualFields?.indikator &&
             options?.refreshMetadataFields &&
-            isPlaceholderIndikator(q.indikator)
-              ? generateSmartIndikatorAbcd(q, metadata, nextTp)
-              : q.indikator,
+            isPlaceholderIndikator(syncedBaseQ.indikator)
+              ? generateSmartIndikatorAbcd(syncedBaseQ, metadata, nextTp)
+              : syncedBaseQ.indikator,
           pembahasan:
-            !q.manualFields?.pembahasan && (!q.pembahasan || q.pembahasan.trim().length === 0)
-              ? generateDefaultPembahasan(q, metadata)
-              : q.pembahasan,
+            !syncedBaseQ.manualFields?.pembahasan &&
+            (!syncedBaseQ.pembahasan || syncedBaseQ.pembahasan.trim().length === 0)
+              ? generateDefaultPembahasan(syncedBaseQ, metadata)
+              : syncedBaseQ.pembahasan,
         };
 
     const baseDraft: QuestionItem = {

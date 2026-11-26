@@ -519,7 +519,8 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
             nextMeta,
             tpForQuestion,
             true,
-            true
+            true,
+            Math.max(0, babQuestionIdx - 1)
           );
         }
 

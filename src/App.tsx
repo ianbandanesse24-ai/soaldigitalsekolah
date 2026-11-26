@@ -184,7 +184,12 @@ function loadStateForUser(username: string): ExamProjectState {
     const normalizedQuestions = autoPopulateQuestionsForColumns(
       normalizeQuestions(parsed.questions, tingkatanPersentase),
       nextMeta,
-      [...kisiCols, ...kartuCols]
+      [...kisiCols, ...kartuCols],
+      {
+        ...(parsed.kisiKisiAcuan?.detectedSampleValues || {}),
+        ...(parsed.kartuSoalAcuan?.detectedSampleValues || {}),
+      },
+      { refreshMetadataFields: true }
     );
 
     return {
