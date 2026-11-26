@@ -19,7 +19,10 @@ import {
   ReferenceColumnDef,
   UploadedFormatAcuan,
 } from '../types/exam';
-import { analyzeCpForSubjectAndPhase } from '../data/cpReferences';
+import {
+  analyzeCpForSubjectAndPhase,
+  cleanTujuanPembelajaranText,
+} from '../data/cpReferences';
 import {
   cognitiveLevelForTier,
   DEFAULT_KARTU_SOAL_FIELDS,
@@ -330,9 +333,10 @@ export const KartuSoalView: React.FC<KartuSoalViewProps> = ({
           />
         );
       case 'tujuanPembelajaran': {
-        const tpVal =
+        const tpVal = cleanTujuanPembelajaranText(
           q.tujuanPembelajaran ||
-          generateDefaultTujuanPembelajaran(q, metadata);
+            generateDefaultTujuanPembelajaran(q, metadata)
+        );
         return (
           <textarea
             rows={2}

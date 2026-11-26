@@ -20,6 +20,7 @@ import {
 import {
   analyzeCpForSubjectAndPhase,
   buildDefaultTpsForBab,
+  cleanTujuanPembelajaranText,
 } from './data/cpReferences';
 import {
   assignTingkatanSoal,
@@ -153,7 +154,7 @@ function loadStateForUser(username: string): ExamProjectState {
       tujuanPembelajaranList:
         Array.isArray(bab.tujuanPembelajaranList) &&
         bab.tujuanPembelajaranList.length > 0
-          ? bab.tujuanPembelajaranList
+          ? bab.tujuanPembelajaranList.map((tp) => cleanTujuanPembelajaranText(tp))
           : bab.namaBab.trim() || bab.lingkupMateri.trim()
           ? buildDefaultTpsForBab(
               bab.namaBab,

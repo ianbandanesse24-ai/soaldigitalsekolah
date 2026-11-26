@@ -15,7 +15,10 @@ import {
   ReferenceColumnDef,
   UploadedFormatAcuan,
 } from '../types/exam';
-import { analyzeCpForSubjectAndPhase } from '../data/cpReferences';
+import {
+  analyzeCpForSubjectAndPhase,
+  cleanTujuanPembelajaranText,
+} from '../data/cpReferences';
 import {
   cognitiveLevelForTier,
   DEFAULT_KISI_KISI_COLUMNS,
@@ -432,9 +435,10 @@ export const KisiKisiView: React.FC<KisiKisiViewProps> = ({
           </span>
         );
       case 'tujuanPembelajaran': {
-        const tpVal =
+        const tpVal = cleanTujuanPembelajaranText(
           q.tujuanPembelajaran ||
-          generateDefaultTujuanPembelajaran(q, metadata);
+            generateDefaultTujuanPembelajaran(q, metadata)
+        );
         return (
           <textarea
             rows={2}

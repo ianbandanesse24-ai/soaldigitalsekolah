@@ -12,6 +12,7 @@ import {
   SHORT_LABEL_JENIS_SOAL,
   tierFromCognitiveLevel,
 } from '../data/defaultExamData';
+import { cleanTujuanPembelajaranText } from '../data/cpReferences';
 import {
   generateAutoCustomFieldValue,
   generateDefaultPembahasan,
@@ -31,9 +32,9 @@ export function resolveQuestionFieldValue(
     case 'kdCp':
       return question.kdCp || '-';
     case 'tujuanPembelajaran':
-      return (
+      return cleanTujuanPembelajaranText(
         question.tujuanPembelajaran ||
-        generateDefaultTujuanPembelajaran(question, metadata)
+          generateDefaultTujuanPembelajaran(question, metadata)
       );
     case 'materi':
       return question.materi || '-';

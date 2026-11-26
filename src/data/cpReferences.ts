@@ -1330,12 +1330,61 @@ function splitLingkupSubtopics(lingkupMateri: string, fallback: string): string[
   return [fallback];
 }
 
+export function cleanTujuanPembelajaranText(tp: string): string {
+  if (!tp || typeof tp !== 'string') return '';
+  let cleaned = tp
+    // 1. Hilangkan akhiran kurung regulasi seperti (Fase E · CP 046 Tahun 2025), (CP 046 Tahun 2025), (Fase F · CP 020/2026), dsb.
+    .replace(/\s*\((?:fase\s+[ef]\s*[·,/|-]\s*)?cp\s*\d+[^)]*\)/gi, '')
+    // 2. Hilangkan frasa "... pada mata pelajaran [Nama Mapel] (Fase ...)" atau "... pada [Nama Mapel] (Fase ...)"
+    .replace(
+      /\s*(?:pada|dalam)\s+(?:mata\s+pelajaran\s+)?[a-z0-9\s/&—–,-]*\((?:fase\s+[ef]|cp\s*\d+)[^)]*\)/gi,
+      ''
+    )
+    // 3. Hilangkan "... mata pelajaran [Nama Mapel] (Fase ...)" tanpa kata depan
+    .replace(
+      /\s*mata\s+pelajaran\s+[a-z0-9\s/&—–,-]*\((?:fase\s+[ef]|cp\s*\d+)[^)]*\)/gi,
+      ''
+    )
+    // 4. Hilangkan "... pada mata pelajaran [Nama Mapel]" atau "mata pelajaran [Nama Mapel] Fase E/F ..."
+    .replace(
+      /\s*(?:pada\s+)?mata\s+pelajaran\s+[a-z0-9\s/&—–,-]+?(?:fase\s+[ef][^.,;!?]*)?(?=[.,!?]|$)/gi,
+      ''
+    )
+    // 5. Hilangkan frasa "selaras capaian: ..." bila mengandung CP regulasi atau meta teks
+    .replace(/\s*selaras\s+capaian\s*:[^.!?]+(?=[.!?]|$)/gi, '')
+    // 6. Hilangkan "sesuai CP 046..." / "CP 046 Tahun 2025" / "CP 020..."
+    .replace(/\s*(?:sesuai|berdasarkan)?\s*cp\s*\d{3}[^.,;!?)]*(?=[.,;!?)]|$)/gi, '')
+    // 7. Hilangkan "(Fase E)" / "(Fase F)" / "Fase E" / "Fase F" jika masih tersisa
+    .replace(/\s*\(\s*fase\s+[ef]\s*\)/gi, '')
+    .replace(/\s*\bfase\s+[ef]\b/gi, '')
+    // 8. Rapikan spasi dan tanda baca
+    .replace(/\s+([.,!?])/g, '$1')
+    .replace(/\.+$/g, '.')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
+  // Jika kalimat terpotong di akhir kata depan/konjungsi, lengkapi agar tetap natural dan utuh
+  if (/\b(?:pada|dalam|untuk|dengan|secara)\s*\.?$/i.test(cleaned)) {
+    cleaned = cleaned.replace(/\s*\b(?:pada|dalam|untuk|dengan|secara)\s*\.?$/i, '');
+  }
+
+  if (/dalam pemecahan masalah kontekstual\.?$/i.test(cleaned)) {
+    cleaned = cleaned.replace(/\.?$/, '') + ' secara tepat sesuai kemampuan.';
+  } else if (/untuk memecahkan masalah kontekstual\.?$/i.test(cleaned)) {
+    cleaned = cleaned.replace(/\.?$/, '') + ' dengan runtut dan jelas.';
+  } else if (!/[.!?]$/.test(cleaned) && cleaned.length > 0) {
+    cleaned = `${cleaned}.`;
+  }
+
+  return cleaned;
+}
+
 export function buildDefaultTpsForBab(
   namaBab: string,
   lingkupMateri: string,
   mataPelajaran: string,
-  fase: string,
-  capaianPembelajaran?: string
+  _fase: string,
+  _capaianPembelajaran?: string
 ): string[] {
   const trimmedBab = (namaBab || '').trim();
   const trimmedScope = (lingkupMateri || '').trim();
@@ -1351,31 +1400,39 @@ export function buildDefaultTpsForBab(
   const secondTopic = subtopics[1] || cleanScope;
 
   const isAgama = isAgamaBudiPekertiSubject(mataPelajaran);
-  const regShort = isAgama
-    ? CP_REGULATIONS.CP_020_2026.short
-    : CP_REGULATIONS.CP_046_2025.short;
-  const faseLabel = fase === 'Fase E' || fase === 'E' ? 'Fase E' : 'Fase F';
+  const isBahasa = /bahasa|sastra|indonesia|inggris|arab|jepang|jerman|mandarin|daerah/i.test(
+    mataPelajaran
+  );
 
-  // Format Tujuan Pembelajaran (TP) yang fleksibel, komunikatif, dan bermakna selaras CP & Kurikulum Merdeka
+  // Kalimat TP yang luwes, tidak kaku, serta menyesuaikan bertahap dengan kemampuan peserta didik
+  // (Pemahaman Awal -> Penerapan Kontekstual -> Penalaran & Pemecahan Masalah)
   const tp1 = isAgama
-    ? `Peserta didik mampu memahami, menjelaskan, dan merefleksikan nilai-nilai ajaran pada materi ${firstTopic} (${cleanBab}) dalam kehidupan sehari-hari.`
-    : `Peserta didik dapat memahami dan menjelaskan konsep dasar ${firstTopic} pada materi ${cleanBab} secara tepat dan bermakna.`;
+    ? `Peserta didik dapat mengenal, memahami, dan menceritakan kembali nilai-nilai kebaikan dari materi ${firstTopic} dalam keseharian.`
+    : isBahasa
+    ? `Peserta didik dapat mengenali isi pokok, struktur, dan makna teks pada materi ${firstTopic} dengan bahasa yang jelas.`
+    : `Peserta didik dapat mengenali dan menjelaskan konsep dasar ${firstTopic} pada materi ${cleanBab} dengan bahasa sendiri secara runtut.`;
 
-  const cleanCpSnippet = capaianPembelajaran
-    ? capaianPembelajaran.replace(/^memahami\s+/i, '').replace(/\.$/, '')
-    : '';
-
-  const tp2 = cleanCpSnippet
-    ? `Peserta didik mampu menerapkan dan menganalisis konsep ${secondTopic} dalam pemecahan masalah kontekstual selaras capaian: ${cleanCpSnippet}.`
-    : `Peserta didik mampu menerapkan konsep ${secondTopic} untuk memecahkan masalah kontekstual pada ${mataPelajaran} (${faseLabel} · ${regShort}).`;
+  const tp2 = isAgama
+    ? `Peserta didik mampu membiasakan sikap terpuji dan menerapkan nilai ajaran ${secondTopic} saat berinteraksi dengan sesama.`
+    : isBahasa
+    ? `Peserta didik mampu mengolah informasi dan menyampaikan gagasan terkait ${secondTopic} secara runtut serta komunikatif.`
+    : `Peserta didik mampu menggunakan pemahaman tentang ${secondTopic} untuk menyelesaikan soal maupun situasi nyata sehari-hari dengan tepat.`;
 
   if (subtopics.length >= 3) {
     const thirdTopic = subtopics[2];
-    const tp3 = `Peserta didik mampu menganalisis, mengevaluasi, dan menyimpulkan solusi kreatif terkait materi ${thirdTopic} pada ${cleanBab}.`;
-    return [tp1, tp2, tp3];
+    const tp3 = isAgama
+      ? `Peserta didik mampu merefleksikan hikmah pembelajaran ${thirdTopic} sehingga dapat bersikap bijaksana dalam mengambil keputusan.`
+      : isBahasa
+      ? `Peserta didik mampu menelaah dan menyusun tanggapan atau karya kreatif terkait ${thirdTopic} secara mandiri.`
+      : `Peserta didik mampu menganalisis dan menemukan solusi logis atas permasalahan kontekstual yang berkaitan dengan ${thirdTopic}.`;
+    return [
+      cleanTujuanPembelajaranText(tp1),
+      cleanTujuanPembelajaranText(tp2),
+      cleanTujuanPembelajaranText(tp3),
+    ];
   }
 
-  return [tp1, tp2];
+  return [cleanTujuanPembelajaranText(tp1), cleanTujuanPembelajaranText(tp2)];
 }
 
 export function buildBabListFromCpAnalysis(

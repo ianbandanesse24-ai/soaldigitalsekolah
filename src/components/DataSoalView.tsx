@@ -22,6 +22,7 @@ import {
   analyzeCpForSubjectAndPhase,
   buildBabListFromCpAnalysis,
   buildDefaultTpsForBab,
+  cleanTujuanPembelajaranText,
   CP_REGULATIONS,
   isAgamaBudiPekertiSubject,
   SMA_SUBJECT_CATALOG,
@@ -493,7 +494,7 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
 
         const tpForQuestion = !q.manualFields?.tujuanPembelajaran
           ? resolveTpForQuestionInBab(q, finalBab, babQuestionIdx, nextMeta)
-          : q.tujuanPembelajaran || '';
+          : cleanTujuanPembelajaranText(q.tujuanPembelajaran || '');
         babQuestionIdx++;
 
         const nextCpForQ = !q.manualFields?.kdCp
@@ -574,7 +575,7 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
   const getBabTpList = (bab: BabMateriConfig): string[] => {
     if (Array.isArray(bab.tujuanPembelajaranList)) {
       if (bab.tujuanPembelajaranList.length > 0) {
-        return bab.tujuanPembelajaranList;
+        return bab.tujuanPembelajaranList.map((tp) => cleanTujuanPembelajaranText(tp));
       }
       if (!bab.namaBab.trim() && !bab.lingkupMateri.trim()) {
         return [];
@@ -603,9 +604,13 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
     const currentList = [...getBabTpList(bab)];
     const cleanBab = (bab.namaBab || 'Materi Pokok').replace(/^Bab\s*\d+\s*:\s*/i, '').trim();
     const cleanScope = bab.lingkupMateri.trim() || cleanBab;
-    currentList.push(
-      `Peserta didik mampu menerapkan dan menganalisis materi ${cleanScope} pada ${cleanBab} dalam pemecahan masalah kontekstual secara mendalam.`
-    );
+    const tpTemplates = [
+      `Peserta didik dapat mengenali dan menjelaskan konsep dasar ${cleanScope} dengan bahasa yang mudah dipahami.`,
+      `Peserta didik mampu menggunakan pemahaman ${cleanScope} untuk menyelesaikan persoalan sehari-hari dengan tepat.`,
+      `Peserta didik mampu menganalisis dan menemukan solusi logis atas permasalahan kontekstual terkait ${cleanScope}.`,
+      `Peserta didik mampu mengevaluasi dan menyimpulkan gagasan utama dari pembelajaran ${cleanScope} secara mandiri.`,
+    ];
+    currentList.push(tpTemplates[currentList.length % tpTemplates.length]);
     handleUpdateBabItem(bab.id, { tujuanPembelajaranList: currentList });
   };
 
