@@ -14,6 +14,10 @@ import {
   CP_REGULATIONS,
   isAgamaBudiPekertiSubject,
 } from '../data/cpReferences';
+import {
+  buildCalculationBlueprint,
+  CalculationDomain,
+} from './calculationBlueprints';
 
 const SHORT_TYPE_LABELS: Record<QuestionType, string> = {
   PG: 'Pilihan Ganda',
@@ -219,7 +223,7 @@ function extractSubtopics(scope: string, fallback: string): string[] {
 }
 
 function isCalculationSubject(subject: string): boolean {
-  return /matematika|fisika|kimia|ekonomi|akuntansi|informatika|statistika/i.test(
+  return /matematika|fisika|kimia|ekonomi|akuntansi|informatika|statistika|ipa|ilmu pengetahuan alam|prakarya|pkwu/i.test(
     subject
   );
 }
@@ -334,28 +338,40 @@ export function generateSmartIndikatorAbcd(
 
   const condition =
     tier === 'LOTS'
-      ? `Disajikan pemaparan konsep dasar mengenai ${subtopic} pada ${babLabel}`
+      ? isCalc
+        ? `Disajikan data atau persamaan dasar mengenai ${subtopic} pada ${babLabel}`
+        : `Disajikan pemaparan konsep dasar mengenai ${subtopic} pada ${babLabel}`
       : tier === 'MOTS'
       ? isCalc
         ? `Disajikan permasalahan perhitungan terapan mengenai ${subtopic} (${babLabel})`
         : `Disajikan data atau ilustrasi kasus mengenai ${subtopic} (${babLabel})`
+      : isCalc
+      ? `Disajikan permasalahan perhitungan kontekstual mengenai ${subtopic} (${babLabel})`
       : `Disajikan stimulus permasalahan kompleks/kontekstual mengenai ${subtopic} (${babLabel})`;
 
   const behavior =
     q.type === 'PG'
       ? tier === 'LOTS'
-        ? 'mengidentifikasi pengertian, ciri, atau prinsip yang paling tepat melalui pilihan A–E'
+        ? isCalc
+          ? 'menghitung atau menentukan nilai hasil operasi yang tepat melalui pilihan A–E'
+          : 'mengidentifikasi pengertian, ciri, atau prinsip yang paling tepat melalui pilihan A–E'
         : tier === 'MOTS'
         ? isCalc
           ? 'menentukan hasil penyelesaian secara cermat dan akurat pada pilihan A–E'
           : 'menerapkan konsep yang tepat untuk memecahkan permasalahan tersebut'
+        : isCalc
+        ? 'menganalisis permasalahan terapan dan menghitung solusi paling tepat melalui pilihan A–E'
         : 'menganalisis keterkaitan antarvariabel serta menyimpulkan solusi paling rasional'
       : q.type === 'JAWABAN_SINGKAT'
       ? isCalc
         ? 'menghitung dan menuliskan nilai/besaran hasil akhirnya secara singkat dan tepat'
         : 'menuliskan istilah kunci atau konsep inti secara ringkas dan tepat'
       : q.type === 'MENJODOHKAN'
-      ? 'memasangkan konsep/pernyataan pada kolom kiri dengan deskripsi/rumus padanannya di kolom kanan secara tepat'
+      ? isCalc
+        ? 'memasangkan soal perhitungan atau besaran pada kolom kiri dengan hasil nilai padanannya di kolom kanan secara tepat'
+        : 'memasangkan konsep/pernyataan pada kolom kiri dengan deskripsi/rumus padanannya di kolom kanan secara tepat'
+      : isCalc
+      ? 'menguraikan langkah perhitungan sistematis serta menentukan hasil penyelesaian akhir dengan tepat'
       : 'menguraikan langkah analisis, penalaran logis, serta kesimpulan penyelesaian secara sistematis';
 
   const tpSuffix = tpText ? '' : ` (${metadata.mataPelajaran} ${metadata.kelas})`;
@@ -671,7 +687,22 @@ function buildDomainQuestionBlueprint(params: {
   // 1. PILIHAN GANDA (PG)
   if (type === 'PG') {
     if (domain === 'MATEMATIKA') {
+      // Prioritaskan materi Anuitas & Bunga Majemuk/Tunggal agar selalu menghasilkan soal hitungan keuangan yang sesuai
+      const hasAnuitasOrBungaSub =
+        subLower.includes('anuitas') ||
+        subLower.includes('angsuran') ||
+        subLower.includes('cicilan') ||
+        subLower.includes('pinjaman') ||
+        subLower.includes('bunga') ||
+        subLower.includes('tabungan') ||
+        subLower.includes('deposito');
+      const hasAnuitasOrBungaTopic =
+        focusText.includes('anuitas') ||
+        focusText.includes('bunga majemuk') ||
+        focusText.includes('bunga tunggal');
+
       const hasExplicitOtherSubtopic =
+        hasAnuitasOrBungaSub ||
         subLower.includes('logaritma') ||
         subLower.includes('akar') ||
         subLower.includes('pertumbuhan') ||
@@ -702,6 +733,20 @@ function buildDomainQuestionBlueprint(params: {
         subLower.includes('suku banyak') ||
         subLower.includes('transformasi') ||
         subLower.includes('program linear');
+
+      if (hasAnuitasOrBungaSub || (!hasExplicitOtherSubtopic && hasAnuitasOrBungaTopic)) {
+        const finBp = buildCalculationBlueprint({
+          domain: 'MATEMATIKA',
+          subject,
+          babTitle,
+          scope,
+          subtopic,
+          tier,
+          type,
+          variantIdx,
+        });
+        if (finBp) return finBp;
+      }
 
       if (
         subLower.includes('logaritma') ||
@@ -1878,80 +1923,17 @@ function buildDomainQuestionBlueprint(params: {
         return matLotsItems[Math.abs(variantIdx) % matLotsItems.length];
       }
 
-      if (focusText.includes('lingkaran') || focusText.includes('busur') || focusText.includes('juring')) {
-        return {
-          rumusan: `Diketahui sebuah lingkaran berjari-jari 14 cm dengan sudut pusat juring 90° pada materi ${cleanSub} (${cleanBab}). Luas juring tersebut (π = 22/7) adalah ....`,
-          correctOption: '154 cm²',
-          distractors: ['44 cm²', '77 cm²', '308 cm²', '616 cm²'],
-          pembahasanHint: 'Luas juring = (90°/360°) × (22/7) × 14 × 14 = ¼ × 616 = 154 cm².',
-        };
-      }
-
-      if (focusText.includes('limit')) {
-        return {
-          rumusan: `Nilai dari lim (x→2) (x² − 4) / (x − 2) pada materi ${cleanSub} (${cleanBab}) adalah ....`,
-          correctOption: '4',
-          distractors: ['0', '2', '6', '8'],
-          pembahasanHint: 'Faktorkan pembilang: (x − 2)(x + 2)/(x − 2) = x + 2, lalu substitusi x = 2 → 2 + 2 = 4.',
-        };
-      }
-
-      if (focusText.includes('turunan') || focusText.includes('diferensial')) {
-        return {
-          rumusan: `Diketahui fungsi f(x) = 3x² − 4x + 7 pada materi ${cleanSub} (${cleanBab}). Turunan pertama f'(x) adalah ....`,
-          correctOption: '6x − 4',
-          distractors: ['3x − 4', '6x + 7', '6x² − 4', '3x² − 4'],
-          pembahasanHint: 'Turunan 3x² adalah 6x, turunan −4x adalah −4, dan turunan konstanta 7 adalah 0.',
-        };
-      }
-
-      if (focusText.includes('integral')) {
-        return {
-          rumusan: `Hasil dari ∫ (6x² + 4x − 3) dx pada materi ${cleanSub} (${cleanBab}) adalah ....`,
-          correctOption: '2x³ + 2x² − 3x + C',
-          distractors: ['6x³ + 4x² − 3x + C', '3x³ + 2x² − 3x + C', '2x³ + 4x² − 3 + C', '12x + 4 + C'],
-          pembahasanHint: '∫ 6x² dx = 2x³, ∫ 4x dx = 2x², ∫ −3 dx = −3x, ditambah konstanta C.',
-        };
-      }
-
-      if (focusText.includes('polinomial') || focusText.includes('suku banyak')) {
-        return {
-          rumusan: `Sisa pembagian suku banyak P(x) = x³ − 2x² + 5x − 4 oleh (x − 2) pada materi ${cleanSub} (${cleanBab}) adalah ....`,
-          correctOption: '6',
-          distractors: ['2', '4', '8', '10'],
-          pembahasanHint: 'Berdasarkan Teorema Sisa, sisa = P(2) = 2³ − 2(2²) + 5(2) − 4 = 8 − 8 + 10 − 4 = 6.',
-        };
-      }
-
-      if (focusText.includes('transformasi') || focusText.includes('translasi') || focusText.includes('refleksi') || focusText.includes('rotasi') || focusText.includes('dilatasi')) {
-        return {
-          rumusan: `Bayangan titik A(3, −2) setelah ditranslasikan oleh T = (4, 5) pada materi ${cleanSub} (${cleanBab}) adalah ....`,
-          correctOption: '(7, 3)',
-          distractors: ['(−1, −7)', '(7, −7)', '(−1, 3)', '(12, −10)'],
-          pembahasanHint: 'A\'(3 + 4, −2 + 5) = A\'(7, 3).',
-        };
-      }
-
-      if (focusText.includes('program linear') || focusText.includes('pertidaksamaan') || focusText.includes('spldv')) {
-        return {
-          rumusan: `Diketahui sistem persamaan linear 2x + y = 8 dan x − y = 1 pada kajian ${cleanSub} (${cleanBab}). Nilai x + y adalah ....`,
-          correctOption: '5',
-          distractors: ['3', '4', '6', '7'],
-          pembahasanHint: 'Jumlahkan kedua persamaan: 3x = 9 → x = 3, maka y = 2, sehingga x + y = 5.',
-        };
-      }
-
-      return {
-        rumusan: getFlexibleRumusan(domain, tier, cleanBab, cleanSub, variantIdx),
-        correctOption: `Konsep dan kaidah ${cleanSub} pada ${cleanBab} diterapkan secara konsisten sesuai syarat domain yang berlaku`,
-        distractors: [
-          `Nilai variabel pada ${cleanSub} ditentukan tanpa memperhatikan syarat domain`,
-          `Setiap persamaan pada ${cleanBab} selalu bernilai konstan untuk semua bilangan`,
-          `Operasi ${cleanSub} tidak dipengaruhi oleh perubahan koefisien maupun variabel`,
-          `Hasil perhitungan ${cleanBab} tidak memerlukan pembuktian sifat aljabar`,
-        ],
-        pembahasanHint: `Pemenuhan syarat domain dan kaidah matematika pada ${cleanSub} (${cleanBab}) menghasilkan penyelesaian yang valid.`,
-      };
+      const mathExtraBp = buildCalculationBlueprint({
+        domain: 'MATEMATIKA',
+        subject,
+        babTitle,
+        scope,
+        subtopic,
+        tier,
+        type,
+        variantIdx,
+      });
+      if (mathExtraBp) return mathExtraBp;
     }
 
     if (focusText.includes('konsep geografi') || focusText.includes('peta') || focusText.includes('sig') || focusText.includes('penginderaan')) {
@@ -1979,165 +1961,23 @@ function buildDomainQuestionBlueprint(params: {
       };
     }
 
-    if (domain === 'EKONOMI') {
-      if (focusText.includes('kelangkaan') || focusText.includes('permintaan') || focusText.includes('penawaran') || focusText.includes('pasar') || focusText.includes('elastisitas') || focusText.includes('biaya peluang')) {
-        return {
-          rumusan:
-            tier === 'LOTS'
-              ? `Pada materi ${cleanSub} (${cleanBab}), inti masalah ekonomi yang dihadapi manusia dalam pemenuhan kebutuhan hidup bersumber dari ....`
-              : `Apabila pada kajian ${cleanSub} (${cleanBab}) harga daging ayam naik dari Rp35.000 menjadi Rp40.000/kg sehingga permintaan turun dari 200 kg menjadi 150 kg, koefisien elastisitas permintaan bersifat ....`,
-          correctOption:
-            tier === 'LOTS'
-              ? `Keterbatasan sumber daya di satu sisi dan kebutuhan manusia yang tidak terbatas di sisi lain`
-              : `Elastis (|Ed| > 1)`,
-          distractors: [
-            `Kelimpahan barang dan jasa yang tidak terserap oleh pasar`,
-            `Tingginya pendapatan per kapita yang menurunkan produksi`,
-            `Inelastis sempurna (|Ed| = 0)`,
-            `Uniter (|Ed| = 1)`,
-          ],
-          pembahasanHint: `Kajian ${cleanSub} membahas kelangkaan sumber daya dan respons permintaan terhadap perubahan harga.`,
-        };
-      }
-      if (focusText.includes('inflasi') || focusText.includes('moneter') || focusText.includes('fiskal') || focusText.includes('pendapatan nasional') || focusText.includes('gdp') || focusText.includes('apbn')) {
-        return {
-          rumusan: `Dalam kajian ${cleanSub} (${cleanBab}), kebijakan bank sentral menaikkan suku bunga acuan (BI Rate) saat terjadi inflasi tinggi bertujuan untuk ....`,
-          correctOption: `Mengurangi jumlah uang beredar di masyarakat agar kestabilan harga terjaga`,
-          distractors: [
-            `Mendorong masyarakat mengambil kredit konsumtif secara besar-besaran`,
-            `Meningkatkan jumlah uang beredar tanpa kendali`,
-            `Menurunkan nilai tukar mata uang domestik secara drastis`,
-            `Menghentikan seluruh aktivitas perdagangan antarwilayah`,
-          ],
-          pembahasanHint: `Kenaikan suku bunga acuan merupakan instrumen kebijakan moneter kontraktif dalam materi ${cleanSub}.`,
-        };
-      }
-      if (focusText.includes('akuntansi') || focusText.includes('jurnal') || focusText.includes('neraca') || focusText.includes('persamaan dasar')) {
-        return {
-          rumusan: `Pada materi ${cleanSub} (${cleanBab}), apabila perusahaan membeli perlengkapan kantor secara tunai sebesar Rp2.500.000, pengaruhnya terhadap persamaan dasar akuntansi adalah ....`,
-          correctOption: `Aset (Perlengkapan) bertambah Rp2.500.000 dan Aset (Kas) berkurang Rp2.500.000`,
-          distractors: [
-            `Aset bertambah Rp2.500.000 dan Utang bertambah Rp2.500.000`,
-            `Aset berkurang Rp2.500.000 dan Modal berkurang Rp2.500.000`,
-            `Kas bertambah Rp2.500.000 dan Modal bertambah Rp2.500.000`,
-            `Utang berkurang Rp2.500.000 dan Kas bertambah Rp2.500.000`,
-          ],
-          pembahasanHint: `Pembelian tunai hanya mengubah komposisi aset (Kas berkurang, Perlengkapan bertambah).`,
-        };
-      }
-      return {
-        rumusan: getFlexibleRumusan(domain, tier, cleanBab, cleanSub, variantIdx),
-        correctOption: `Pengelolaan ${cleanSub} yang efisien, produktif, dan sesuai prinsip ${cleanBab}`,
-        distractors: [
-          `Pengabaian perhitungan biaya dan manfaat dalam pengambilan keputusan ${cleanSub}`,
-          `Peningkatan pengeluaran tanpa mempertimbangkan daya beli masyarakat`,
-          `Penghapusan mekanisme pencatatan dan evaluasi pada ${cleanBab}`,
-          `Penetapan kebijakan yang bertentangan dengan prinsip ekonomi rasional`,
-        ],
-        pembahasanHint: `Prinsip utama dalam materi ${cleanSub} (${cleanBab}) adalah efisiensi dan pengambilan keputusan ekonomi rasional.`,
-      };
-    }
-
-    if (domain === 'FISIKA') {
-      if (focusText.includes('ukur') || focusText.includes('besaran') || focusText.includes('satuan') || focusText.includes('angka penting') || focusText.includes('jangka sorong')) {
-        return {
-          rumusan: `Pada kajian ${cleanSub} (${cleanBab}), besaran turunan dalam sistem SI yang memiliki satuan kg·m/s² adalah ....`,
-          correctOption: 'Gaya (Newton)',
-          distractors: ['Usaha (Joule)', 'Daya (Watt)', 'Tekanan (Pascal)', 'Momentum (kg·m/s)'],
-          pembahasanHint: 'Berdasarkan F = m·a, satuan gaya adalah kg·m/s² = Newton.',
-        };
-      }
-      if (focusText.includes('energi') || focusText.includes('kinematika') || focusText.includes('dinamika') || focusText.includes('gerak') || focusText.includes('newton') || focusText.includes('usaha') || focusText.includes('momentum')) {
-        return {
-          rumusan:
-            tier === 'HOTS'
-              ? `Pada materi ${cleanSub} (${cleanBab}), sebuah bola dilempar vertikal ke atas dengan kecepatan awal 20 m/s (g = 10 m/s²). Ketinggian maksimum yang dicapai bola adalah ....`
-              : `Dalam kajian ${cleanSub} (${cleanBab}), sebuah benda bermassa 1.000 kg bergerak dengan kelajuan 20 m/s. Besar energi kinetik (Eₖ) benda tersebut adalah ....`,
-          correctOption: tier === 'HOTS' ? '20 meter' : '200.000 Joule (200 kJ)',
-          distractors:
-            tier === 'HOTS'
-              ? ['10 meter', '15 meter', '30 meter', '40 meter']
-              : ['10.000 Joule', '20.000 Joule', '100.000 Joule', '400.000 Joule'],
-          pembahasanHint:
-            tier === 'HOTS'
-              ? 'h_max = v₀² ÷ (2g) = 400 ÷ 20 = 20 meter.'
-              : 'Eₖ = ½m·v² = ½(1000)(20)² = 200.000 J.',
-        };
-      }
-      if (focusText.includes('fluida') || focusText.includes('tekanan') || focusText.includes('pascal') || focusText.includes('archimedes') || focusText.includes('bernoulli')) {
-        return {
-          rumusan: `Pada materi ${cleanSub} (${cleanBab}), sebuah pompa hidrolik memiliki luas penampang kecil A₁ = 10 cm² dan penampang besar A₂ = 100 cm². Jika gaya tekan F₁ = 50 N, gaya angkat F₂ yang dihasilkan adalah ....`,
-          correctOption: '500 N',
-          distractors: ['50 N', '100 N', '250 N', '5.000 N'],
-          pembahasanHint: 'Hukum Pascal: F₁/A₁ = F₂/A₂ → F₂ = (100/10) × 50 = 500 N.',
-        };
-      }
-      if (focusText.includes('listrik') || focusText.includes('rangkaian') || focusText.includes('hambatan') || focusText.includes('ohm') || focusText.includes('coulomb') || focusText.includes('magnet')) {
-        return {
-          rumusan: `Pada materi ${cleanSub} (${cleanBab}), sebuah penghantar berhambatan 12 Ω dihubungkan pada tegangan 24 Volt. Kuat arus listrik yang mengalir adalah ....`,
-          correctOption: '2 Ampere',
-          distractors: ['0,5 Ampere', '4 Ampere', '12 Ampere', '36 Ampere'],
-          pembahasanHint: 'Hukum Ohm: I = V ÷ R = 24 ÷ 12 = 2 A.',
-        };
-      }
-      return {
-        rumusan: getFlexibleRumusan(domain, tier, cleanBab, cleanSub, variantIdx),
-        correctOption: `Hukum dan persamaan fisis pada ${cleanSub} (${cleanBab}) berlaku konsisten dalam sistem besaran SI`,
-        distractors: [
-          `Nilai besaran fisis pada ${cleanSub} berubah secara acak tanpa hubungan kausal`,
-          `Satuan internasional dapat diabaikan dalam perhitungan ${cleanBab}`,
-          `Variabel gaya, energi, dan waktu tidak saling memengaruhi pada ${cleanSub}`,
-          `Hasil pengukuran ${cleanBab} selalu bebas dari ketidakpastian`,
-        ],
-        pembahasanHint: `Penyelesaian ${cleanSub} (${cleanBab}) didasarkan pada hukum kekekalan dan konsistensi satuan SI.`,
-      };
-    }
-
-    if (domain === 'KIMIA') {
-      if (focusText.includes('atom') || focusText.includes('elektron') || focusText.includes('periodik') || focusText.includes('kimia hijau')) {
-        return {
-          rumusan: `Dalam kajian ${cleanSub} (${cleanBab}), partikel subatom penyusun inti atom yang tidak bermuatan listrik adalah ....`,
-          correctOption: 'Neutron',
-          distractors: ['Proton', 'Elektron', 'Positron', 'Nukleofil'],
-          pembahasanHint: 'Inti atom tersusun atas proton (+) dan neutron (netral).',
-        };
-      }
-      if (focusText.includes('stoikiometri') || focusText.includes('mol') || focusText.includes('molaritas') || focusText.includes('larutan')) {
-        return {
-          rumusan:
-            tier === 'MOTS'
-              ? `Pada materi ${cleanSub} (${cleanBab}), massa molekul relatif (Mᵣ) dari senyawa glukosa C₆H₁₂O₆ (Aᵣ C = 12, H = 1, O = 16) adalah ....`
-              : `Sebanyak 4 gram NaOH (Mᵣ = 40) dilarutkan dalam air hingga volume 500 mL pada kajian ${cleanSub} (${cleanBab}). Molaritas larutan adalah ....`,
-          correctOption: tier === 'MOTS' ? '180' : '0,2 M',
-          distractors:
-            tier === 'MOTS'
-              ? ['90', '144', '160', '342']
-              : ['0,05 M', '0,1 M', '0,4 M', '2,0 M'],
-          pembahasanHint:
-            tier === 'MOTS'
-              ? 'Mᵣ C₆H₁₂O₆ = 6(12) + 12(1) + 6(16) = 180.'
-              : 'M = (4/40) ÷ 0,5 = 0,1 ÷ 0,5 = 0,2 M.',
-        };
-      }
-      if (focusText.includes('asam') || focusText.includes('basa') || focusText.includes('titrasi') || focusText.includes('ph') || focusText.includes('penyangga') || focusText.includes('hidrolisis')) {
-        return {
-          rumusan: `Pada kajian ${cleanSub} (${cleanBab}), nilai pH dari larutan asam kuat HCl 0,01 M adalah ....`,
-          correctOption: '2',
-          distractors: ['1', '3', '7', '12'],
-          pembahasanHint: '[H⁺] = 0,01 = 10⁻², sehingga pH = −log(10⁻²) = 2.',
-        };
-      }
-      return {
-        rumusan: getFlexibleRumusan(domain, tier, cleanBab, cleanSub, variantIdx),
-        correctOption: `Mekanisme reaksi dan sifat materi pada ${cleanSub} (${cleanBab}) memenuhi hukum dasar kimia`,
-        distractors: [
-          `Massa zat sebelum dan sesudah reaksi pada ${cleanSub} selalu hilang seluruhnya`,
-          `Persamaan reaksi ${cleanBab} tidak memerlukan penyetaraan koefisien`,
-          `Ikatan antaratom pada ${cleanSub} terjadi tanpa interaksi elektron valensi`,
-          `Prinsip kimia hijau mendukung pembuangan limbah reaktif secara langsung`,
-        ],
-        pembahasanHint: `Kajian ${cleanSub} pada ${cleanBab} mengikuti hukum dasar kimia dan stoikiometri reaksi.`,
-      };
+    if (
+      domain === 'EKONOMI' ||
+      domain === 'FISIKA' ||
+      domain === 'KIMIA' ||
+      domain === 'INFORMATIKA'
+    ) {
+      const calcBp = buildCalculationBlueprint({
+        domain: domain as CalculationDomain,
+        subject,
+        babTitle,
+        scope,
+        subtopic,
+        tier,
+        type,
+        variantIdx,
+      });
+      if (calcBp) return calcBp;
     }
 
     if (domain === 'BIOLOGI') {
@@ -2206,6 +2046,28 @@ function buildDomainQuestionBlueprint(params: {
       ],
       pembahasanHint: `Konsep ${cleanSub} pada ${cleanBab} didasarkan pada prinsip keilmuan ${subject} yang teruji.`,
     };
+  }
+
+  // Untuk mapel hitungan (Matematika, Fisika, Kimia, Ekonomi, Informatika),
+  // semua tipe soal (Jawaban Singkat, Menjodohkan, Esai) juga menghasilkan soal hitungan sesuai Bab & Lingkup Materi.
+  if (
+    domain === 'MATEMATIKA' ||
+    domain === 'FISIKA' ||
+    domain === 'KIMIA' ||
+    domain === 'EKONOMI' ||
+    domain === 'INFORMATIKA'
+  ) {
+    const calcNonPgBp = buildCalculationBlueprint({
+      domain: domain as CalculationDomain,
+      subject,
+      babTitle,
+      scope,
+      subtopic,
+      tier,
+      type,
+      variantIdx,
+    });
+    if (calcNonPgBp) return calcNonPgBp;
   }
 
   // 2. JAWABAN SINGKAT
@@ -2800,9 +2662,9 @@ export function autoPopulateQuestionsForColumns(
     let adjusted: QuestionItem = q;
     let altOffset = qIdx * 17 + 11;
     let attempts = 0;
-    while (seenPopStems.has(stem) && attempts < 8) {
+    while (seenPopStems.has(stem) && attempts < 24) {
       attempts++;
-      altOffset += 19;
+      altOffset += 13;
       adjusted = generateSmartDraftContentForQuestion(
         q,
         metadata,

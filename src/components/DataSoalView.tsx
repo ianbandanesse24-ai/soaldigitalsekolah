@@ -548,9 +548,9 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
         let adjusted = q;
         let altOffset = qIdx * 17 + 11;
         let attempts = 0;
-        while (seenSoalStems.has(stem) && attempts < 8) {
+        while (seenSoalStems.has(stem) && attempts < 24) {
           attempts++;
-          altOffset += 19;
+          altOffset += 13;
           adjusted = generateSmartDraftContentForQuestion(
             q,
             nextMeta,

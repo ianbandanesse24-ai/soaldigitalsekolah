@@ -745,7 +745,7 @@ export function syncQuestionsWithBabAndTypes(
     let adjustedQ = q;
     let attempts = 0;
     let altOffset = qIdx * 11 + 7;
-    while (seenStems.has(stem) && attempts < 8) {
+    while (seenStems.has(stem) && attempts < 24) {
       attempts++;
       altOffset += 13;
       const matchedBab = babList.find((b) => b.id === q.babId || b.namaBab === q.namaBab);
