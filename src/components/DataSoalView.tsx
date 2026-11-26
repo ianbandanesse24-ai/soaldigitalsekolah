@@ -605,10 +605,18 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
     const cleanBab = (bab.namaBab || 'Materi Pokok').replace(/^Bab\s*\d+\s*:\s*/i, '').trim();
     const cleanScope = bab.lingkupMateri.trim() || cleanBab;
     const tpTemplates = [
-      `Peserta didik dapat mengenali dan menjelaskan konsep dasar ${cleanScope} dengan bahasa yang mudah dipahami.`,
-      `Peserta didik mampu menggunakan pemahaman ${cleanScope} untuk menyelesaikan persoalan sehari-hari dengan tepat.`,
-      `Peserta didik mampu menganalisis dan menemukan solusi logis atas permasalahan kontekstual terkait ${cleanScope}.`,
-      `Peserta didik mampu mengevaluasi dan menyimpulkan gagasan utama dari pembelajaran ${cleanScope} secara mandiri.`,
+      // C1 - Mengingat
+      `Peserta didik dapat mengenali dan menyebutkan konsep serta istilah dasar pada ${cleanScope} dengan jelas.`,
+      // C2 - Memahami
+      `Peserta didik dapat memahami dan menjelaskan kembali prinsip dasar ${cleanScope} menggunakan bahasa sendiri secara runtut.`,
+      // C3 - Menerapkan
+      `Peserta didik mampu menerapkan pemahaman tentang ${cleanScope} untuk menyelesaikan soal maupun situasi nyata sehari-hari dengan tepat.`,
+      // C4 - Menganalisis
+      `Peserta didik mampu menganalisis keterkaitan antarunsur serta langkah pemecahan masalah kontekstual terkait ${cleanScope}.`,
+      // C5 - Mengevaluasi
+      `Peserta didik mampu mengevaluasi ketepatan suatu solusi atau argumen terkait ${cleanScope} dan menarik simpulan yang logis.`,
+      // C6 - Mencipta
+      `Peserta didik mampu merumuskan gagasan, model penyelesaian, atau rancangan solusi kreatif terkait ${cleanScope} secara mandiri.`,
     ];
     currentList.push(tpTemplates[currentList.length % tpTemplates.length]);
     handleUpdateBabItem(bab.id, { tujuanPembelajaranList: currentList });
@@ -1634,16 +1642,16 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
                       <div className="mt-2 rounded-md border border-slate-200 bg-slate-50/70 p-2 space-y-1.5">
                         <div className="flex flex-wrap items-center justify-between gap-1.5">
                           <span className="text-[11px] font-semibold text-slate-700">
-                            Tujuan Pembelajaran (TP) · {tpList.length}{' '}
+                            Tujuan Pembelajaran (TP · Urutan C1–C6) · {tpList.length}{' '}
                             <span className="font-normal text-emerald-700">
-                              (Otomatis dari Bab &amp; Lingkup Materi)
+                              (Otomatis berurutan C1–C6)
                             </span>
                           </span>
                           <div className="flex items-center gap-1">
                             <button
                               type="button"
                               onClick={() => handleAutoFillBabTp(bab)}
-                              title="Susun ulang TP otomatis dari CP & Lingkup Materi"
+                              title="Susun ulang TP otomatis berurutan C1–C6"
                               className="inline-flex items-center gap-1 rounded border border-slate-300 bg-white px-1.5 py-0.5 text-[11px] font-medium text-slate-700 hover:bg-slate-100"
                             >
                               <Sparkles className="h-3 w-3 text-blue-700" />
@@ -1662,29 +1670,34 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
 
                         {tpList.length === 0 ? (
                           <p className="rounded border border-dashed border-slate-300 bg-white px-2.5 py-2 text-[11px] text-slate-500">
-                            Ketik Nama Bab atau Lingkup Materi untuk membuat Tujuan Pembelajaran (TP) secara otomatis.
+                            Ketik Nama Bab atau Lingkup Materi untuk membuat Tujuan Pembelajaran (TP) secara otomatis sesuai urutan C1–C6.
                           </p>
                         ) : (
                           <div className="space-y-1.5">
-                            {tpList.map((tpText, tpIdx) => (
+                            {tpList.map((tpText, tpIdx) => {
+                              const cogTag = `C${(tpIdx % 6) + 1}`;
+                              return (
                               <div
                                 key={`${bab.id}_tp_${tpIdx}`}
                                 className="flex items-start gap-1.5"
                               >
-                                <span className="mt-1.5 shrink-0 font-mono text-[10px] font-semibold text-slate-500 w-7">
+                                <span className="mt-1 shrink-0 font-mono text-[10px] font-semibold text-slate-600 w-9 leading-tight">
                                   TP {tpIdx + 1}
+                                  <span className="block text-[9px] font-bold text-blue-700">
+                                    {cogTag}
+                                  </span>
                                 </span>
                                 <textarea
                                   rows={2}
                                   value={tpText}
                                   onFocus={bindMathField(
-                                    `Bab ${idx + 1} · TP ${tpIdx + 1}`,
+                                    `Bab ${idx + 1} · TP ${tpIdx + 1} (${cogTag})`,
                                     (next) => handleUpdateBabTp(bab, tpIdx, next)
                                   )}
                                   onChange={(e) =>
                                     handleUpdateBabTp(bab, tpIdx, e.target.value)
                                   }
-                                  placeholder={`Tuliskan Tujuan Pembelajaran ke-${tpIdx + 1}...`}
+                                  placeholder={`Tuliskan Tujuan Pembelajaran ke-${tpIdx + 1} (${cogTag})...`}
                                   className="w-full rounded border border-slate-300 bg-white px-2 py-1 text-[11px] leading-snug text-slate-800 focus:border-blue-700 focus:ring-1 focus:ring-blue-600/20 focus:outline-none"
                                 />
                                 <button
@@ -1697,7 +1710,8 @@ export const DataSoalView: React.FC<DataSoalViewProps> = ({
                                   <Trash2 className="h-3 w-3" />
                                 </button>
                               </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         )}
                       </div>

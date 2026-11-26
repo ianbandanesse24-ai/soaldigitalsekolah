@@ -1419,42 +1419,61 @@ export function buildDefaultTpsForBab(
   const cleanBab = displayBab.replace(/^Bab\s*\d+\s*:\s*/i, '').trim() || displayBab;
   const cleanScope = trimmedScope || cleanBab;
   const subtopics = splitLingkupSubtopics(cleanScope, cleanBab);
-  const firstTopic = subtopics[0] || cleanScope;
-  const secondTopic = subtopics[1] || cleanScope;
+  const topicAt = (idx: number) => subtopics[idx % subtopics.length] || cleanScope;
 
   const isAgama = isAgamaBudiPekertiSubject(mataPelajaran);
   const isBahasa = /bahasa|sastra|indonesia|inggris|arab|jepang|jerman|mandarin|daerah/i.test(
     mataPelajaran
   );
 
-  // Kalimat TP yang luwes, menyesuaikan kemampuan peserta didik, tanpa menyebut nama Bab, Lingkup Materi, maupun kode regulasi
-  const tp1 = isAgama
-    ? `Peserta didik dapat mengenal, memahami, dan menceritakan kembali nilai-nilai kebaikan terkait ${firstTopic} dalam keseharian.`
+  // Urutan Tujuan Pembelajaran (TP) mengikuti taksonomi kognitif C1 -> C2 -> C3 -> C4 -> C5 -> C6
+  // dengan kalimat yang luwes sesuai kemampuan peserta didik serta tanpa menyebut Bab/Lingkup Materi/CP.
+  const tpList = isAgama
+    ? [
+        // C1 - Mengingat
+        `Peserta didik dapat mengenali dan menyebutkan nilai-nilai kebaikan serta ajaran pokok terkait ${topicAt(0)} dengan jelas.`,
+        // C2 - Memahami
+        `Peserta didik dapat memahami dan menjelaskan makna serta hikmah ${topicAt(1)} menggunakan bahasa sendiri secara runtut.`,
+        // C3 - Menerapkan
+        `Peserta didik mampu membiasakan sikap terpuji dan menerapkan nilai ${topicAt(2)} dalam interaksi sehari-hari.`,
+        // C4 - Menganalisis
+        `Peserta didik mampu menelaah keterkaitan nilai ${topicAt(3)} dengan berbagai persoalan sosial di sekitarnya secara bijaksana.`,
+        // C5 - Mengevaluasi
+        `Peserta didik mampu menilai dan merefleksikan sikap yang paling tepat dalam menyikapi tantangan terkait ${topicAt(4)}.`,
+        // C6 - Mencipta
+        `Peserta didik mampu merancang kebiasaan baik atau aksi nyata yang mencerminkan nilai ${topicAt(5)} secara mandiri.`,
+      ]
     : isBahasa
-    ? `Peserta didik dapat mengenali isi pokok, struktur, dan makna teks terkait ${firstTopic} dengan bahasa yang jelas.`
-    : `Peserta didik dapat mengenali dan menjelaskan konsep dasar ${firstTopic} dengan bahasa sendiri secara runtut.`;
+    ? [
+        // C1 - Mengingat
+        `Peserta didik dapat mengenali dan mengidentifikasi informasi utama serta unsur dasar pada ${topicAt(0)} dengan tepat.`,
+        // C2 - Memahami
+        `Peserta didik dapat memahami dan menjelaskan isi pokok, struktur, serta makna ${topicAt(1)} dengan bahasa yang jelas.`,
+        // C3 - Menerapkan
+        `Peserta didik mampu menggunakan kaidah dan pemahaman tentang ${topicAt(2)} untuk menyampaikan gagasan secara komunikatif.`,
+        // C4 - Menganalisis
+        `Peserta didik mampu menganalisis hubungan antarunsur serta makna tersirat pada ${topicAt(3)} secara cermat.`,
+        // C5 - Mengevaluasi
+        `Peserta didik mampu menilai ketepatan argumen, efektivitas bahasa, dan menyimpulkan gagasan utama dari ${topicAt(4)}.`,
+        // C6 - Mencipta
+        `Peserta didik mampu merancang dan menyusun karya tulis atau tanggapan kreatif terkait ${topicAt(5)} secara mandiri.`,
+      ]
+    : [
+        // C1 - Mengingat
+        `Peserta didik dapat mengenali dan menyebutkan konsep serta istilah dasar pada ${topicAt(0)} dengan jelas.`,
+        // C2 - Memahami
+        `Peserta didik dapat memahami dan menjelaskan kembali prinsip dasar ${topicAt(1)} menggunakan bahasa sendiri secara runtut.`,
+        // C3 - Menerapkan
+        `Peserta didik mampu menerapkan pemahaman tentang ${topicAt(2)} untuk menyelesaikan soal maupun situasi nyata sehari-hari dengan tepat.`,
+        // C4 - Menganalisis
+        `Peserta didik mampu menganalisis keterkaitan antarunsur serta langkah pemecahan masalah kontekstual terkait ${topicAt(3)}.`,
+        // C5 - Mengevaluasi
+        `Peserta didik mampu mengevaluasi ketepatan suatu solusi atau argumen terkait ${topicAt(4)} dan menarik simpulan yang logis.`,
+        // C6 - Mencipta
+        `Peserta didik mampu merumuskan gagasan, model penyelesaian, atau rancangan solusi kreatif terkait ${topicAt(5)} secara mandiri.`,
+      ];
 
-  const tp2 = isAgama
-    ? `Peserta didik mampu membiasakan sikap terpuji dan menerapkan nilai ajaran ${secondTopic} saat berinteraksi dengan sesama.`
-    : isBahasa
-    ? `Peserta didik mampu mengolah informasi dan menyampaikan gagasan terkait ${secondTopic} secara runtut serta komunikatif.`
-    : `Peserta didik mampu menggunakan pemahaman tentang ${secondTopic} untuk menyelesaikan soal maupun situasi nyata sehari-hari dengan tepat.`;
-
-  if (subtopics.length >= 3) {
-    const thirdTopic = subtopics[2];
-    const tp3 = isAgama
-      ? `Peserta didik mampu merefleksikan hikmah pembelajaran ${thirdTopic} sehingga dapat bersikap bijaksana dalam mengambil keputusan.`
-      : isBahasa
-      ? `Peserta didik mampu menelaah dan menyusun tanggapan atau karya kreatif terkait ${thirdTopic} secara mandiri.`
-      : `Peserta didik mampu menganalisis dan menemukan solusi logis atas permasalahan kontekstual yang berkaitan dengan ${thirdTopic}.`;
-    return [
-      cleanTujuanPembelajaranText(tp1),
-      cleanTujuanPembelajaranText(tp2),
-      cleanTujuanPembelajaranText(tp3),
-    ];
-  }
-
-  return [cleanTujuanPembelajaranText(tp1), cleanTujuanPembelajaranText(tp2)];
+  return tpList.map((tp) => cleanTujuanPembelajaranText(tp));
 }
 
 export function buildBabListFromCpAnalysis(

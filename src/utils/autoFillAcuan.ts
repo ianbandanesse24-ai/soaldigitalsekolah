@@ -1,5 +1,6 @@
 import {
   BabMateriConfig,
+  CognitiveLevel,
   ExamMetadata,
   MatchingPair,
   QuestionItem,
@@ -223,6 +224,35 @@ function isCalculationSubject(subject: string): boolean {
   );
 }
 
+function cognitiveLevelToTpIndex(level?: CognitiveLevel, tier?: QuestionTier): number {
+  if (level === 'C1') return 0;
+  if (level === 'C2') return 1;
+  if (level === 'C3') return 2;
+  if (level === 'C4') return 3;
+  if (level === 'C5') return 4;
+  if (level === 'C6') return 5;
+  if (tier === 'LOTS') return 1;
+  if (tier === 'MOTS') return 2;
+  return 3;
+}
+
+export function pickTpForCognitiveLevel(
+  tpList: string[],
+  level?: CognitiveLevel,
+  tier?: QuestionTier
+): string {
+  if (tpList.length === 0) return '';
+  const cogIdx = cognitiveLevelToTpIndex(level, tier);
+  if (tpList.length >= 6) {
+    return tpList[Math.min(cogIdx, tpList.length - 1)];
+  }
+  const mappedIdx = Math.min(
+    tpList.length - 1,
+    Math.floor((cogIdx * tpList.length) / 6)
+  );
+  return tpList[mappedIdx];
+}
+
 export function generateDefaultTujuanPembelajaran(
   q: QuestionItem,
   metadata: ExamMetadata
@@ -230,43 +260,48 @@ export function generateDefaultTujuanPembelajaran(
   const matchedBab = (metadata.babMateriList || []).find(
     (b) => b.id === q.babId || b.namaBab === q.namaBab
   );
+  const tier = resolveTier(q);
   const tpList = (matchedBab?.tujuanPembelajaranList || [])
     .map((tp) => cleanTujuanPembelajaranText(tp))
     .filter((tp) => tp.trim().length > 0);
   if (tpList.length > 0) {
-    return tpList[Math.max(0, (q.nomor - 1) % tpList.length)];
+    return pickTpForCognitiveLevel(tpList, q.levelKognitif, tier);
   }
 
   const scope = cleanScopeText(q, matchedBab);
-  const tier = resolveTier(q);
+  const cogIdx = cognitiveLevelToTpIndex(q.levelKognitif, tier);
 
-  if (tier === 'LOTS') {
-    return cleanTujuanPembelajaranText(
-      `Peserta didik dapat mengenali dan menjelaskan konsep dasar ${scope} dengan bahasa yang jelas.`
-    );
-  }
-  if (tier === 'MOTS') {
-    return cleanTujuanPembelajaranText(
-      `Peserta didik mampu menggunakan pemahaman mengenai ${scope} untuk menyelesaikan persoalan sehari-hari dengan tepat.`
-    );
-  }
-  return cleanTujuanPembelajaranText(
-    `Peserta didik mampu menganalisis dan menemukan solusi logis atas permasalahan kontekstual terkait ${scope}.`
-  );
+  const c1ToC6Fallbacks = [
+    // C1 - Mengingat
+    `Peserta didik dapat mengenali dan menyebutkan konsep serta istilah dasar pada ${scope} dengan jelas.`,
+    // C2 - Memahami
+    `Peserta didik dapat memahami dan menjelaskan kembali prinsip dasar ${scope} menggunakan bahasa sendiri secara runtut.`,
+    // C3 - Menerapkan
+    `Peserta didik mampu menerapkan pemahaman tentang ${scope} untuk menyelesaikan soal maupun situasi nyata sehari-hari dengan tepat.`,
+    // C4 - Menganalisis
+    `Peserta didik mampu menganalisis keterkaitan antarunsur serta langkah pemecahan masalah kontekstual terkait ${scope}.`,
+    // C5 - Mengevaluasi
+    `Peserta didik mampu mengevaluasi ketepatan suatu solusi atau argumen terkait ${scope} dan menarik simpulan yang logis.`,
+    // C6 - Mencipta
+    `Peserta didik mampu merumuskan gagasan, model penyelesaian, atau rancangan solusi kreatif terkait ${scope} secara mandiri.`,
+  ];
+
+  return cleanTujuanPembelajaranText(c1ToC6Fallbacks[cogIdx] || c1ToC6Fallbacks[1]);
 }
 
 export function resolveTpForQuestionInBab(
   q: QuestionItem,
   bab: BabMateriConfig | undefined,
-  indexWithinBab: number,
+  _indexWithinBab: number,
   metadata: ExamMetadata
 ): string {
+  const tier = resolveTier(q);
   if (bab) {
     const validList = (bab.tujuanPembelajaranList || [])
       .map((tp) => cleanTujuanPembelajaranText(tp))
       .filter((tp) => tp.trim().length > 0);
     if (validList.length > 0) {
-      return validList[indexWithinBab % validList.length];
+      return pickTpForCognitiveLevel(validList, q.levelKognitif, tier);
     }
     const generatedList = buildDefaultTpsForBab(
       bab.namaBab,
@@ -276,7 +311,7 @@ export function resolveTpForQuestionInBab(
       bab.capaianPembelajaran
     );
     return cleanTujuanPembelajaranText(
-      generatedList[indexWithinBab % generatedList.length] || ''
+      pickTpForCognitiveLevel(generatedList, q.levelKognitif, tier)
     );
   }
   return generateDefaultTujuanPembelajaran(q, metadata);

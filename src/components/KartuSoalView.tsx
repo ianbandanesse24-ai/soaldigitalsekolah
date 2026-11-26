@@ -139,6 +139,17 @@ export const KartuSoalView: React.FC<KartuSoalViewProps> = ({
         ...(editedDraftContent ? { isAutoDraft: false } : {}),
       };
 
+      if (
+        (patch.levelKognitif !== undefined || patch.tingkatanSoal !== undefined) &&
+        patch.tujuanPembelajaran === undefined &&
+        !nextManualFields.tujuanPembelajaran
+      ) {
+        merged.tujuanPembelajaran = generateDefaultTujuanPembelajaran(
+          merged,
+          metadata
+        );
+      }
+
       if (patch.type !== undefined) {
         return generateSmartDraftContentForQuestion(
           {
