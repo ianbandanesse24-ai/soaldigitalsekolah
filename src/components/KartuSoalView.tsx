@@ -102,7 +102,40 @@ export const KartuSoalView: React.FC<KartuSoalViewProps> = ({
   const updateQuestion = (id: string, patch: Partial<QuestionItem>) => {
     const updated = questions.map((q) => {
       if (q.id !== id) return q;
-      const merged = { ...q, ...patch };
+
+      const nextManualFields = { ...(q.manualFields || {}) };
+      if (patch.kdCp !== undefined) nextManualFields.kdCp = true;
+      if (patch.tujuanPembelajaran !== undefined) nextManualFields.tujuanPembelajaran = true;
+      if (patch.indikator !== undefined) nextManualFields.indikator = true;
+      if (patch.pembahasan !== undefined) nextManualFields.pembahasan = true;
+      if (patch.sumberBuku !== undefined) nextManualFields.sumberBuku = true;
+      if (patch.customFields !== undefined) {
+        const prevCustom = q.customFields || {};
+        const changedKeys = Object.keys(patch.customFields).filter(
+          (k) => patch.customFields![k] !== prevCustom[k]
+        );
+        if (changedKeys.length > 0) {
+          nextManualFields.customKeys = Array.from(
+            new Set([...(nextManualFields.customKeys || []), ...changedKeys])
+          );
+        }
+      }
+
+      const editedDraftContent =
+        patch.rumusanSoal !== undefined ||
+        patch.opsiPg !== undefined ||
+        patch.kunciPg !== undefined ||
+        patch.kunciSingkat !== undefined ||
+        patch.kunciEsai !== undefined ||
+        patch.pasanganMenjodohkan !== undefined;
+
+      const merged: QuestionItem = {
+        ...q,
+        ...patch,
+        manualFields: nextManualFields,
+        ...(editedDraftContent ? { isAutoDraft: false } : {}),
+      };
+
       if (patch.type !== undefined) {
         return generateSmartDraftContentForQuestion(
           {
@@ -660,6 +693,16 @@ export const KartuSoalView: React.FC<KartuSoalViewProps> = ({
 
       {/* Lembar Kartu Soal */}
       <div className="space-y-8">
+        {displayedQuestions.length === 0 && (
+          <div className="rounded-xl border border-slate-200 bg-white px-6 py-12 text-center shadow-xs">
+            <p className="text-sm font-semibold text-slate-700">
+              Belum ada Kartu Soal aktif.
+            </p>
+            <p className="mt-1 text-xs text-slate-500">
+              Tambahkan Bab &amp; Lingkup Materi pada menu <strong className="text-slate-700">Data Soal</strong> untuk membuat Kartu Soal secara otomatis.
+            </p>
+          </div>
+        )}
         {displayedQuestions.map((q, cardIdx) => {
           const kunciText = resolveQuestionFieldValue(q, metadata, {
             id: 'kunci_preview',

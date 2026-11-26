@@ -1337,8 +1337,15 @@ export function buildDefaultTpsForBab(
   fase: string,
   capaianPembelajaran?: string
 ): string[] {
-  const cleanBab = namaBab.replace(/^Bab\s*\d+\s*:\s*/i, '').trim() || namaBab;
-  const cleanScope = lingkupMateri.trim() || cleanBab;
+  const trimmedBab = (namaBab || '').trim();
+  const trimmedScope = (lingkupMateri || '').trim();
+  if (!trimmedBab && !trimmedScope) {
+    return [];
+  }
+
+  const displayBab = trimmedBab || trimmedScope;
+  const cleanBab = displayBab.replace(/^Bab\s*\d+\s*:\s*/i, '').trim() || displayBab;
+  const cleanScope = trimmedScope || cleanBab;
   const subtopics = splitLingkupSubtopics(cleanScope, cleanBab);
   const firstTopic = subtopics[0] || cleanScope;
   const secondTopic = subtopics[1] || cleanScope;
@@ -1348,18 +1355,19 @@ export function buildDefaultTpsForBab(
     ? CP_REGULATIONS.CP_020_2026.short
     : CP_REGULATIONS.CP_046_2025.short;
   const faseLabel = fase === 'Fase E' || fase === 'E' ? 'Fase E' : 'Fase F';
+  const scopeClause = trimmedScope ? ` (lingkup materi ${cleanScope})` : '';
 
   const tp1 = isAgama
-    ? `Pada ${namaBab} (lingkup materi ${cleanScope}), peserta didik mampu memahami, menelaah, dan merefleksikan nilai ajaran mengenai ${firstTopic} sesuai ${regShort} ${faseLabel}.`
-    : `Pada ${namaBab} dengan lingkup materi ${cleanScope}, peserta didik mampu menjelaskan konsep inti ${firstTopic} dalam mata pelajaran ${mataPelajaran} (${faseLabel} · ${regShort}) secara bermakna.`;
+    ? `Pada ${displayBab}${scopeClause}, peserta didik mampu memahami, menelaah, dan merefleksikan nilai ajaran mengenai ${firstTopic} sesuai ${regShort} ${faseLabel}.`
+    : `Pada ${displayBab}${scopeClause}, peserta didik mampu memahami dan menjelaskan konsep inti ${firstTopic} dalam mata pelajaran ${mataPelajaran} (${faseLabel} · ${regShort}) secara bermakna.`;
 
   const tp2 = capaianPembelajaran
-    ? `Melalui pembelajaran ${namaBab} pada lingkup materi ${secondTopic}, peserta didik mampu menerapkan dan menganalisis permasalahan kontekstual untuk mencapai capaian: ${capaianPembelajaran.replace(/\.$/, '')}.`
-    : `Melalui pembelajaran ${namaBab} pada lingkup materi ${secondTopic}, peserta didik mampu menerapkan, menganalisis, dan mengevaluasi pemecahan masalah nyata secara kritis dan kreatif.`;
+    ? `Melalui pembelajaran ${displayBab} pada lingkup materi ${secondTopic}, peserta didik mampu menerapkan dan menganalisis permasalahan kontekstual untuk mencapai capaian: ${capaianPembelajaran.replace(/\.$/, '')}.`
+    : `Melalui pembelajaran ${displayBab} pada lingkup materi ${secondTopic}, peserta didik mampu menerapkan, menganalisis, dan mengevaluasi pemecahan masalah nyata secara kritis dan kreatif.`;
 
   if (subtopics.length >= 3) {
     const thirdTopic = subtopics[2];
-    const tp3 = `Pada ${namaBab} (lingkup materi ${thirdTopic}), peserta didik mampu mengevaluasi dan menyimpulkan keterkaitan antarkonsep ${cleanScope} dalam konteks kehidupan sehari-hari.`;
+    const tp3 = `Pada ${displayBab} (lingkup materi ${thirdTopic}), peserta didik mampu mengevaluasi dan menyimpulkan keterkaitan antarkonsep ${cleanScope} dalam konteks kehidupan sehari-hari.`;
     return [tp1, tp2, tp3];
   }
 

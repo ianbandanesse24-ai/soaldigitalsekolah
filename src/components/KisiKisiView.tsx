@@ -95,7 +95,40 @@ export const KisiKisiView: React.FC<KisiKisiViewProps> = ({
   ) => {
     const updated = questions.map((q) => {
       if (q.id !== id) return q;
-      const merged = { ...q, ...patch };
+
+      const nextManualFields = { ...(q.manualFields || {}) };
+      if (patch.kdCp !== undefined) nextManualFields.kdCp = true;
+      if (patch.tujuanPembelajaran !== undefined) nextManualFields.tujuanPembelajaran = true;
+      if (patch.indikator !== undefined) nextManualFields.indikator = true;
+      if (patch.pembahasan !== undefined) nextManualFields.pembahasan = true;
+      if (patch.sumberBuku !== undefined) nextManualFields.sumberBuku = true;
+      if (patch.customFields !== undefined) {
+        const prevCustom = q.customFields || {};
+        const changedKeys = Object.keys(patch.customFields).filter(
+          (k) => patch.customFields![k] !== prevCustom[k]
+        );
+        if (changedKeys.length > 0) {
+          nextManualFields.customKeys = Array.from(
+            new Set([...(nextManualFields.customKeys || []), ...changedKeys])
+          );
+        }
+      }
+
+      const editedDraftContent =
+        patch.rumusanSoal !== undefined ||
+        patch.opsiPg !== undefined ||
+        patch.kunciPg !== undefined ||
+        patch.kunciSingkat !== undefined ||
+        patch.kunciEsai !== undefined ||
+        patch.pasanganMenjodohkan !== undefined;
+
+      const merged: QuestionItem = {
+        ...q,
+        ...patch,
+        manualFields: nextManualFields,
+        ...(editedDraftContent ? { isAutoDraft: false } : {}),
+      };
+
       if (patch.type !== undefined) {
         return generateSmartDraftContentForQuestion(
           {
@@ -702,21 +735,33 @@ export const KisiKisiView: React.FC<KisiKisiViewProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {questions.map((q) => (
-                <tr
-                  key={q.id}
-                  className="bg-white hover:bg-slate-50/70 align-top print-break-inside-avoid"
-                >
-                  {columns.map((col) => (
-                    <td
-                      key={col.id}
-                      className="border-r border-slate-200 px-2.5 py-2 last:border-r-0"
-                    >
-                      {renderEditableCell(q, col)}
-                    </td>
-                  ))}
+              {questions.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={columns.length}
+                    className="px-4 py-10 text-center text-xs text-slate-500 bg-white"
+                  >
+                    Belum ada butir soal. Isi Bab &amp; Lingkup Materi pada menu{' '}
+                    <strong className="text-slate-700">Data Soal</strong> untuk menghasilkan baris Kisi-Kisi secara otomatis.
+                  </td>
                 </tr>
-              ))}
+              ) : (
+                questions.map((q) => (
+                  <tr
+                    key={q.id}
+                    className="bg-white hover:bg-slate-50/70 align-top print-break-inside-avoid"
+                  >
+                    {columns.map((col) => (
+                      <td
+                        key={col.id}
+                        className="border-r border-slate-200 px-2.5 py-2 last:border-r-0"
+                      >
+                        {renderEditableCell(q, col)}
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

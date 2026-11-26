@@ -20,6 +20,16 @@ export interface BabMateriConfig {
   elemenCp?: string;
   capaianPembelajaran?: string;
   jumlahSoal: number;
+  isManualBab?: boolean;
+}
+
+export interface QuestionManualFields {
+  kdCp?: boolean;
+  tujuanPembelajaran?: boolean;
+  indikator?: boolean;
+  pembahasan?: boolean;
+  sumberBuku?: boolean;
+  customKeys?: string[];
 }
 
 export interface QuestionItem {
@@ -55,6 +65,8 @@ export interface QuestionItem {
   gambarKeterangan?: string;
   gambarPosisi?: 'atas' | 'bawah';
   customFields?: Record<string, string>;
+  isAutoDraft?: boolean;
+  manualFields?: QuestionManualFields;
 }
 
 export interface ExamMetadata {

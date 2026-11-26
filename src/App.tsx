@@ -154,13 +154,15 @@ function loadStateForUser(username: string): ExamProjectState {
         Array.isArray(bab.tujuanPembelajaranList) &&
         bab.tujuanPembelajaranList.length > 0
           ? bab.tujuanPembelajaranList
-          : buildDefaultTpsForBab(
+          : bab.namaBab.trim() || bab.lingkupMateri.trim()
+          ? buildDefaultTpsForBab(
               bab.namaBab,
               bab.lingkupMateri,
               subjectName,
               smaGrade.fase,
               bab.capaianPembelajaran
-            ),
+            )
+          : [],
     }));
 
     const nextMeta: ExamMetadata = {
@@ -304,7 +306,8 @@ export default function App() {
         {
           ...(prev.kisiKisiAcuan?.detectedSampleValues || {}),
           ...(prev.kartuSoalAcuan?.detectedSampleValues || {}),
-        }
+        },
+        { refreshMetadataFields: true }
       );
       return {
         ...prev,
@@ -319,7 +322,12 @@ export default function App() {
       const populated = autoPopulateQuestionsForColumns(
         prev.questions,
         metadata,
-        [...prev.kisiKisiColumns, ...prev.kartuSoalFields]
+        [...prev.kisiKisiColumns, ...prev.kartuSoalFields],
+        {
+          ...(prev.kisiKisiAcuan?.detectedSampleValues || {}),
+          ...(prev.kartuSoalAcuan?.detectedSampleValues || {}),
+        },
+        { refreshMetadataFields: true }
       );
       return {
         ...prev,
